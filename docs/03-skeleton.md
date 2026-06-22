@@ -1,0 +1,89 @@
+# Repo Skeleton (monorepo)
+
+One repository, one `docker-compose.yml`, one `infra/` folder. Easiest to develop and to show
+employers "the whole system" in one place.
+
+```
+Website-portfolio/
+├── README.md
+├── docs/                         ← these planning docs
+│   ├── 01-architecture.md
+│   ├── 02-tech-stack.md
+│   ├── 03-skeleton.md
+│   ├── 04-sprint-plan.md
+│   └── 05-decisions.md
+│
+├── docker-compose.yml            ← runs everything locally (Phase 0)
+├── .env.example                  ← documents required env vars (no secrets committed)
+│
+├── frontend/                     ← Next.js + TypeScript
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── Dockerfile
+│   ├── public/
+│   └── src/
+│       ├── app/                  ← routes: /, /projects, /projects/[slug], /games, /ask
+│       ├── components/           ← ChatWidget, GameBoard, FeedbackForm, ProjectCard
+│       ├── lib/                  ← api client (typed fetch wrappers)
+│       └── styles/
+│
+├── services/
+│   ├── core-api/                 ← Java 21 + Spring Boot
+│   │   ├── pom.xml               (or build.gradle)
+│   │   ├── Dockerfile            ← multi-stage (build jar → slim runtime)
+│   │   └── src/main/
+│   │       ├── java/com/diego/portfolio/
+│   │       │   ├── PortfolioApplication.java
+│   │       │   ├── auth/         ← controllers, JWT filter, security config
+│   │       │   ├── projects/     ← controller, service, repo, entity
+│   │       │   ├── feedback/     ← controller, service, repo, entity
+│   │       │   ├── games/        ← session/score endpoints + AI-service client
+│   │       │   └── common/       ← config, error handling, DTOs
+│   │       └── resources/
+│   │           ├── application.yml
+│   │           └── db/migration/ ← Flyway V1__init.sql, V2__... (schema designed later)
+│   │
+│   └── ai-service/               ← Python 3.12 + FastAPI (port of BluHorizon)
+│       ├── requirements.txt
+│       ├── Dockerfile
+│       ├── main.py               ← FastAPI app + router includes
+│       ├── config.py             ← pydantic-settings (DB url, DEFAULT provider + its key/host, caps)
+│       ├── routers/
+│       │   ├── chat.py           ← AMA RAG endpoint (default model; optional BYOK provider+key)
+│       │   ├── ingest.py         ← document ingestion
+│       │   └── games.py          ← LLM move endpoint
+│       └── services/
+│           ├── retrieval/        ← OURS, FIXED (never swappable)
+│           │   ├── rag_pipeline.py   ← HyDE pipeline (ported)
+│           │   ├── embedding.py      ← sentence-transformers (local)
+│           │   └── pgvector_store.py ← replaces FAISS store
+│           └── generation/       ← pluggable per request (default free/cheap, BYOK optional)
+│               ├── base.py           ← LLMProvider interface: generate(prompt, key=None) -> text
+│               ├── ollama.py         ← free self-hosted default (no key)
+│               ├── claude.py         ← Anthropic impl (BYOK or cheap default)
+│               ├── openai.py         ← OpenAI impl (BYOK)
+│               ├── ratelimit.py      ← daily cap / rate limit for the default model
+│               └── factory.py        ← BYOK key if given, else the configured free/cheap DEFAULT
+│
+├── gateway/
+│   └── nginx.conf                ← path routing: /api → core-api, /ai → ai-service, / → frontend
+│
+└── infra/
+    ├── k8s/                      ← Phase 1+ : raw manifests (or a small Helm chart later)
+    │   ├── frontend.yaml
+    │   ├── core-api.yaml
+    │   ├── ai-service.yaml
+    │   ├── postgres.yaml
+    │   ├── ingress.yaml
+    │   └── secrets.example.yaml
+    ├── terraform/                ← Phase 2 : AWS (VPC, EKS, RDS, ECR, IAM)
+    └── github-actions/           ← (mirrors .github/workflows) build/test/push/deploy
+```
+
+## Conventions to set on day one
+- **One Dockerfile per service**, multi-stage, non-root user.
+- **Env via `.env`** locally; `.env.example` committed and kept in sync; real secrets never committed.
+- **Typed API contract**: keep request/response shapes documented (Spring exposes OpenAPI via
+  springdoc; FastAPI exposes `/docs` automatically) and generate/copy TS types for the frontend.
+- **Path routing is fixed**: frontend always calls `/api/*` and `/ai/*` — true in Compose and in k8s,
+  so nothing in the app changes between environments.
