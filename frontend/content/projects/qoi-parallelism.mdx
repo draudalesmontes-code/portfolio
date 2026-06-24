@@ -1,0 +1,38 @@
+---
+title: QOI Image Codec — GPU Parallelism
+image: /projects/qoi.png
+technologies: [C++, CUDA, OpenMP, libpng, SLURM, HPC]
+github: https://github.com/draudalesmontes-code/ece455-qoi
+contributors: [Tyler Richard, Vincent Iadarola, Diego Raudales]
+---
+
+# Overview
+
+A performance-focused implementation and benchmarking study of the QOI (Quite OK Image) format.
+The codec is implemented in four parallelization variants and benchmarked for encode/decode
+throughput across CPU and GPU on HPC hardware. Capstone project on applying GPU parallelism to
+image compression.
+
+# Tech stack
+
+- **Language:** C++20
+- **GPU:** CUDA (NVIDIA)
+- **CPU parallelism:** OpenMP (multi-core)
+- **Libraries:** libpng, STB image
+- **Build / HPC:** GNU Make (CUDA support), SLURM job scheduler
+
+# Implementations
+
+Four codec variants, benchmarked head-to-head:
+
+- **Reference** — baseline, no parallelism
+- **Single-CPU** — single thread
+- **Multi-CPU** — OpenMP threads
+- **GPU (CUDA)** — CUDA kernels
+- **GPU (segmented)** — segmented CUDA approach
+
+# Highlights
+
+- Lossless QOI operations (index from a 64-entry hash table, RGB diff, luma, run-length)
+- Encode/decode throughput benchmarking from baseline to segmented GPU kernels
+- Runs on HPC hardware via the SLURM scheduler

@@ -1,0 +1,42 @@
+---
+title: RISC-V CPU
+image: /projects/risc-v.png
+technologies: [Verilog, RISC-V, ModelSim, Digital Design]
+github: https://github.com/draudalesmontes-code/processor_RISCV_321
+contributors: [Payton Smith, Diego Raudales, Mitch Pratt]
+---
+
+# Overview
+
+A pipelined RISC-V processor implemented in Verilog. The CPU fetches, decodes, executes, and
+retires RV32I base-integer instructions through a classic five-stage pipeline, with data-hazard
+handling and a cache added in later phases. Built up across a series of projects — from
+individual datapath components to a fully pipelined, cached core.
+
+# Tech stack
+
+- **HDL:** Verilog
+- **ISA:** RISC-V (RV32I base integer)
+- **Simulation:** ModelSim / Questa
+- **Verification:** RISC-V assembly test suite
+
+# Architecture
+
+A five-stage pipeline split into separate modules:
+
+- **Decode** (`decode_phase.v`) — instruction decode + register read
+- **Execute** (`execute_phase.v`) — ALU operations
+- **Memory** (`memory_phase.v`) — load / store
+- **Writeback** (`writeback_phase.v`) — register write-back
+
+…tied together in `hart.v` (the core), alongside `control.v` (control unit), `alu.v`,
+`rf.v` (register file), and `imm.v` (immediate generation).
+
+# Highlights
+
+- **Five-stage pipeline** with a **forwarding unit** (`forwarding_unit.v`) to resolve data hazards
+- **Cache** (`cache.v`) added for the memory hierarchy
+- Full **RV32I** instruction support — arithmetic, logical, shifts, comparisons, immediates,
+  loads/stores, `lui`, and branches (R / I / S / B / U / J instruction formats)
+- Verified with an extensive **assembly test suite** — per-instruction tests plus advanced
+  programs (factorial, sort, exhaustive no-branch)

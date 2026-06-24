@@ -1,0 +1,34 @@
+---
+title: AI-LAB — Multi-Agent Research Orchestration
+image: /projects/agentic_ai_architecture_overview.svg
+technologies: [Python, Claude, Ollama, DuckDuckGo, FastAPI]
+github: https://github.com/draudalesmontes-code/AI-LAB
+---
+
+# Overview
+
+A research orchestration framework that coordinates multiple specialized AI agents to plan,
+execute, and synthesize complex research tasks. Claude acts as the planning and synthesis
+engine, while sub-tasks are dispatched to purpose-built agents (web search, local LLM, file ops).
+
+# Tech stack
+
+- **Language:** Python
+- **AI models:** Anthropic Claude (planning/synthesis), Ollama (`llama3` local fallback)
+- **APIs:** Anthropic API, DuckDuckGo Search
+- **Architecture target:** FastAPI
+
+# Architecture
+
+- `Orchestrator/task_manager.py` — Claude-powered planning & synthesis
+- `agents/researcher_web.py` — web-search agent
+- `agents/researcher_ollama.py` — local-LLM agent
+- `tools/web_search.py` — DuckDuckGo integration
+- `tools/file_ops.py` — workspace file management
+
+# How it works
+
+1. A research goal is passed to the `TaskManager`
+2. Claude decomposes the goal into structured JSON subtasks
+3. Tasks are dispatched to registered agents (web search or local LLM)
+4. Agent outputs are collected and fed back to Claude for synthesis

@@ -1,0 +1,30 @@
+---
+title: BrickedUp — LEGO Collector App
+image: /projects/android.png
+technologies: [Kotlin, Jetpack Compose, Firebase, SQLite, Android]
+github: https://github.com/draudalesmontes-code/ece407-brickedup
+contributors: [Connor Cundinger, Payton Smith, Diego Raudales]
+---
+
+# Overview
+
+An Android app for LEGO enthusiasts to manage their collection, track want lists, and buy or
+sell sets. It integrates the BrickLink marketplace API for live pricing and the Brickset API
+for set-catalog data, with Firebase powering authentication and real-time persistence.
+
+# Tech stack
+
+- **Mobile:** Kotlin + Jetpack Compose
+- **Backend:** Firebase (Firestore, Auth)
+- **APIs:** BrickLink (OAuth1), Brickset (SOAP), Geoapify
+- **Local DB:** SQLite
+- **Build:** Gradle (Kotlin DSL), Android SDK 36
+
+# Features
+
+- **My Sets** — track owned LEGO sets with catalog details from Brickset
+- **Want List** — wishlist sets and monitor their market prices
+- **Buy / Sell** — browse and post listings using BrickLink marketplace data
+- **QR scanning** — identify sets by scanning their QR codes
+- **Location services** — GPS-based discovery of nearby collectors via Geoapify
+- **Price tracking** — automated periodic price updates from the BrickLink price guide

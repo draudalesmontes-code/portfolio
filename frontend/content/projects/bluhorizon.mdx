@@ -1,0 +1,34 @@
+---
+title: BluHorizon AI
+image: /projects/bluhorizon.png
+technologies: [Python, FastAPI, Postgres, pgvector, FAISS, Claude, Flutter, RAG]
+github: https://github.com/draudalesmontes-code/BluHorizon-AI-drm
+---
+
+# Overview
+
+An agentic AI with a Retrieval-Augmented Generation (RAG) system over a vectorized database.
+Built with Python and Anthropic Claude to learn how to build RAG on a vector store. The first
+version used FAISS + SQLite, then migrated to Postgres with pgvector.
+
+# Tech stack
+
+- Python · FastAPI
+- Anthropic Claude (agentic, tool-augmented)
+- Postgres + pgvector (earlier: FAISS + SQLite)
+- Flutter frontend
+
+# Highlights
+
+- HyDE-based RAG pipeline with 384-dim embeddings
+- Agentic tool-use loop (web search, code execution, document search)
+- Migrated the vector store from FAISS to Postgres pgvector
+
+# Challenges
+
+A file-memory issue plus a flaw in the agent's system prompt caused it to skip checking files
+and only run calculations — fixed by reworking the agent instructions.
+
+# Development
+
+~1 month. Test suite with 45 tests; more improvements planned.

@@ -1,0 +1,47 @@
+---
+title: Boggle Buddies
+image: /projects/boggle.png
+technologies: [Java, Spring Boot, React, SQL, Docker, Kubernetes, AWS, GitHub Actions, JUnit]
+github: https://github.com/draudalesmontes-code/boggle-app
+---
+
+# Overview
+
+A multiplayer word game inspired by Boggle: players compete to find as many valid words as
+possible on a randomly generated letter board within a time limit. It supports multiplayer
+matches and a solo player mode, with guest play or accounts that track long-term stats like
+wins and losses.
+
+# Tech stack
+
+- **Frontend:** React (JavaScript)
+- **Backend:** Java Spring Boot REST API
+- **Database:** SQL
+- **Infra:** Docker, Kubernetes, AWS, GitHub Actions CI/CD
+
+# Architecture
+
+A React frontend talks to a Spring Boot REST API backed by a SQL database. The backend is split
+into focused services — game management, scoring, word submission/comparison, and guest cleanup
+— and uses a **Trie** (prefix tree) for fast dictionary word-finding. The data model includes
+users, games, boards, a dictionary, and found-words.
+
+# Features
+
+- Multiplayer matches + solo player mode
+- Guest and registered-user modes with persistent win/loss stats
+- Dice-based board shuffling for random boards
+- Trie-based dictionary validation + rule enforcement (no duplicate words, valid board paths)
+- Dynamic scoring screen highlighting unique vs shared words
+
+# Deployment
+
+Containerized with Docker and deployed to a **Kubernetes cluster on AWS**, with a **GitHub
+Actions CI/CD pipeline** and secrets managed through the External Secrets Operator (AWS Secrets
+Manager). The live cloud deployment was later **taken down to control hosting costs**.
+
+# Testing & CI
+
+- Backend unit tests with JUnit (per-service coverage)
+- Static analysis with PMD
+- CI pipeline runs linting + tests on each commit

@@ -1,0 +1,39 @@
+---
+title: Self-Balancing Segway ASIC
+image: /projects/segway.jpeg
+technologies: [SystemVerilog, Synopsys Design Compiler, ModelSim, PID, ASIC]
+github: https://github.com/draudalesmontes-code/Segway
+contributors: [Jon Brown, Diego Raudales]
+---
+
+# Overview
+
+A complete RTL-to-gates digital hardware design of a self-balancing Segway-style vehicle
+controller, written in SystemVerilog and synthesized to a gate-level netlist with Synopsys
+Design Compiler, targeting Samsung's SAED32 32nm standard-cell library.
+
+# Tech stack
+
+- **HDL:** SystemVerilog
+- **Synthesis:** Synopsys Design Compiler
+- **Simulation:** ModelSim
+- **Std-cell library:** SAED32 RVT (Samsung 32nm)
+- **Test harness:** Python
+
+# Architecture
+
+Top-level `Segway.sv` integrates:
+
+- **Auth_blk** — user authentication
+- **inert_intf** + **inertial_integrator** — ST iNEMO SPI inertial-sensor interface + reading integration
+- **balance_cntrl** — PID-based pitch balance controller (PID + SegwayMath)
+- **steer_en** — steering-enable state machine
+- **mtr_drv** — differential PWM motor drive
+- **A2D_intf** + **PWM11** — ADC interface (load, battery, steering pot) and 11-bit PWM generation
+- **SPI_mnrch**, **UART_rx** — SPI master protocol and UART receive
+
+# Highlights
+
+- Full RTL → gate-level synthesis flow on a 32nm standard-cell library
+- PID balance control with sensor fusion from an inertial sensor
+- Differential motor drive and multi-channel ADC sensing

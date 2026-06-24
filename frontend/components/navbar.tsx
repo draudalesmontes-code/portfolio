@@ -19,29 +19,29 @@ export default function Navbar() {
       {/* LEFT: logo + menu */}
       <div className="flex items-center gap-6">
         <Link
-        href="/"
-        className="flex size-10 items-center justify-center rounded-full bg-white p-1 md:size-12 lg:size-14"
+          href="/"
+          className="flex size-10 items-center justify-center rounded-full bg-white p-1 md:size-12 lg:size-14"
         >
-            <Image
-                src="/logo.png"
-                alt="Diego Raudales Logo"
-                width={64}
-                height={64}
-                className="size-full object-contain"
-                priority
-            />
+          <Image
+            src="/logo.png"
+            alt="Diego Raudales Logo"
+            width={64}
+            height={64}
+            className="size-full object-contain"
+            priority
+          />
         </Link>
 
         <NavigationMenu>
           <NavigationMenuList>
-            {/* Home — plain link */}
+            {/* Home */}
             <NavigationMenuItem>
               <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
                 <Link href="/">Home</Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
 
-            {/* About me — plain link */}
+            {/* About me */}
             <NavigationMenuItem>
               <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
                 <Link href="/about">About me</Link>
@@ -52,76 +52,52 @@ export default function Navbar() {
             <NavigationMenuItem>
               <NavigationMenuTrigger>Projects</NavigationMenuTrigger>
               <NavigationMenuContent>
-                <ul className="grid w-[220px] gap-1 p-2">
+                <ul className="grid w-[240px] gap-1 p-2">
                   <li>
                     <NavigationMenuLink asChild>
-                      <Link href="/projects" className="block rounded-md p-2 hover:bg-accent">
-                        All Projects
-                      </Link>
-                    </NavigationMenuLink>
-                  </li>
-                  <li>
-                    <NavigationMenuLink asChild>
-                      <Link href="/projects/bluhorizon" className="block rounded-md p-2 hover:bg-accent">
-                        BluHorizon AI
-                      </Link>
+                      <Link href="/projects/bluhorizon" className="block rounded-md p-2 hover:bg-accent">BluHorizon AI</Link>
                     </NavigationMenuLink>
                   </li>
                   <li>
                     <NavigationMenuLink asChild>
-                      <Link href="/projects/Segway" className="block rounded-md p-2 hover:bg-accent">
-                        Segway
-                      </Link>
+                      <Link href="/projects/segway" className="block rounded-md p-2 hover:bg-accent">Segway</Link>
                     </NavigationMenuLink>
                   </li>
                   <li>
                     <NavigationMenuLink asChild>
-                      <Link href="/projects/Boggle" className="block rounded-md p-2 hover:bg-accent">
-                        Boggle-app
-                      </Link>
+                      <Link href="/projects/boggle" className="block rounded-md p-2 hover:bg-accent">Boggle Buddies</Link>
                     </NavigationMenuLink>
                   </li>
-                                    <li>
+                  <li>
                     <NavigationMenuLink asChild>
-                      <Link href="/projects/Segway" className="block rounded-md p-2 hover:bg-accent">
-                        Bricked Up Collector
-                      </Link>
+                      <Link href="/projects/bricked-up-collector" className="block rounded-md p-2 hover:bg-accent">Bricked Up Collector</Link>
                     </NavigationMenuLink>
                   </li>
-                                    <li>
+                  <li>
                     <NavigationMenuLink asChild>
-                      <Link href="/projects/Segway" className="block rounded-md p-2 hover:bg-accent">
-                        RISC-V CPU
-                      </Link>
+                      <Link href="/projects/risc-v-cpu" className="block rounded-md p-2 hover:bg-accent">RISC-V CPU</Link>
                     </NavigationMenuLink>
                   </li>
-                                    <li>
+                  <li>
                     <NavigationMenuLink asChild>
-                      <Link href="/projects/Parallelism" className="block rounded-md p-2 hover:bg-accent">
-                        QOI Parallelism
-                      </Link>
+                      <Link href="/projects/qoi-parallelism" className="block rounded-md p-2 hover:bg-accent">QOI Parallelism</Link>
                     </NavigationMenuLink>
                   </li>
-                                    <li>
+                  <li>
                     <NavigationMenuLink asChild>
-                      <Link href="/projects/CalorieCart" className="block rounded-md p-2 hover:bg-accent">
-                        CalorieCart
-                      </Link>
+                      <Link href="/projects/calorie-cart" className="block rounded-md p-2 hover:bg-accent">Calorie Cart</Link>
                     </NavigationMenuLink>
                   </li>
-                                    <li>
+                  <li>
                     <NavigationMenuLink asChild>
-                      <Link href="/projects/AI-LAB" className="block rounded-md p-2 hover:bg-accent">
-                        AI-LAB
-                      </Link>
+                      <Link href="/projects/ai-lab" className="block rounded-md p-2 hover:bg-accent">AI-LAB</Link>
                     </NavigationMenuLink>
                   </li>
-                  
                 </ul>
               </NavigationMenuContent>
             </NavigationMenuItem>
 
-            {/* Contact us — plain link */}
+            {/* Contact me */}
             <NavigationMenuItem>
               <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
                 <Link href="/contact">Contact me</Link>
@@ -135,23 +111,17 @@ export default function Navbar() {
                 <ul className="grid w-[220px] gap-1 p-2">
                   <li>
                     <NavigationMenuLink asChild>
-                      <Link href="/games" className="block rounded-md p-2 hover:bg-accent">
-                        All Games
-                      </Link>
+                      <Link href="/games" className="block rounded-md p-2 hover:bg-accent">All Games</Link>
                     </NavigationMenuLink>
                   </li>
                   <li>
                     <NavigationMenuLink asChild>
-                      <Link href="/games/tic-tac-toe" className="block rounded-md p-2 hover:bg-accent">
-                        Tic-Tac-Toe
-                      </Link>
+                      <Link href="/games/tic-tac-toe" className="block rounded-md p-2 hover:bg-accent">Tic-Tac-Toe</Link>
                     </NavigationMenuLink>
                   </li>
                   <li>
                     <NavigationMenuLink asChild>
-                      <Link href="/games/connect-4" className="block rounded-md p-2 hover:bg-accent">
-                        Connect 4
-                      </Link>
+                      <Link href="/games/connect-4" className="block rounded-md p-2 hover:bg-accent">Connect 4</Link>
                     </NavigationMenuLink>
                   </li>
                 </ul>
