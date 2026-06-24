@@ -1,0 +1,32 @@
+# secrets / env  (ignore all real env files, keep the template)
+.env
+.env.*
+!.env.example
+
+# node / next
+node_modules/
+.next/
+out/
+dist/
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# java / gradle
+build/
+.gradle/
+*.class
+
+# editors / os
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# logs / data
+*.log
+postgres_data/

@@ -1,0 +1,18 @@
+# Keep local build output / caches out of the image build context.
+# The image builds the jar fresh inside the build stage.
+build/
+.gradle/
+*.class
+
+# env / secrets
+.env
+*.env.local
+
+# vcs / docker / editor noise
+.git/
+.gitignore
+Dockerfile
+.dockerignore
+.idea/
+.vscode/
+HELP.md

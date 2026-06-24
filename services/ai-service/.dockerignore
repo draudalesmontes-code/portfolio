@@ -1,0 +1,28 @@
+# Don't copy these into the image (keeps it small + avoids leaking secrets).
+# Works WITH `COPY . .` — anything listed here is skipped even by a copy-everything.
+
+# local virtual environment (the container builds its own from requirements.txt)
+.venv/
+venv/
+
+# python caches / build artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# secrets / local env — never bake into an image
+.env
+*.env.local
+
+# vcs / docker meta
+.git/
+.gitignore
+Dockerfile
+.dockerignore
+
+# docs / editor noise
+*.md
+.vscode/
+.idea/

@@ -1,0 +1,20 @@
+# Keep host build artifacts OUT of the image.
+# Critical: your local node_modules was built on Windows — copying it into a
+# Linux container breaks native modules. The image builds its own via `npm ci`.
+node_modules/
+.next/
+out/
+
+# env / secrets
+.env
+*.env.local
+
+# vcs / docker / editor noise
+.git/
+.gitignore
+Dockerfile
+.dockerignore
+npm-debug.log*
+.DS_Store
+.vscode/
+.idea/

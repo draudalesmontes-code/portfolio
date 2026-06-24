@@ -1,0 +1,178 @@
+import Image from "next/image";
+import Link from "next/link";
+import { User } from "lucide-react";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+export default function Navbar() {
+  return (
+    <header className="flex items-center justify-between border-b px-6 py-3">
+      {/* LEFT: logo + menu */}
+      <div className="flex items-center gap-6">
+        <Link
+        href="/"
+        className="flex size-10 items-center justify-center rounded-full bg-white p-1 md:size-12 lg:size-14"
+        >
+            <Image
+                src="/logo.png"
+                alt="Diego Raudales Logo"
+                width={64}
+                height={64}
+                className="size-full object-contain"
+                priority
+            />
+        </Link>
+
+        <NavigationMenu>
+          <NavigationMenuList>
+            {/* Home — plain link */}
+            <NavigationMenuItem>
+              <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                <Link href="/">Home</Link>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+
+            {/* About me — plain link */}
+            <NavigationMenuItem>
+              <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                <Link href="/about">About me</Link>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+
+            {/* Projects — dropdown */}
+            <NavigationMenuItem>
+              <NavigationMenuTrigger>Projects</NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <ul className="grid w-[220px] gap-1 p-2">
+                  <li>
+                    <NavigationMenuLink asChild>
+                      <Link href="/projects" className="block rounded-md p-2 hover:bg-accent">
+                        All Projects
+                      </Link>
+                    </NavigationMenuLink>
+                  </li>
+                  <li>
+                    <NavigationMenuLink asChild>
+                      <Link href="/projects/bluhorizon" className="block rounded-md p-2 hover:bg-accent">
+                        BluHorizon AI
+                      </Link>
+                    </NavigationMenuLink>
+                  </li>
+                  <li>
+                    <NavigationMenuLink asChild>
+                      <Link href="/projects/Segway" className="block rounded-md p-2 hover:bg-accent">
+                        Segway
+                      </Link>
+                    </NavigationMenuLink>
+                  </li>
+                  <li>
+                    <NavigationMenuLink asChild>
+                      <Link href="/projects/Boggle" className="block rounded-md p-2 hover:bg-accent">
+                        Boggle-app
+                      </Link>
+                    </NavigationMenuLink>
+                  </li>
+                                    <li>
+                    <NavigationMenuLink asChild>
+                      <Link href="/projects/Segway" className="block rounded-md p-2 hover:bg-accent">
+                        Bricked Up Collector
+                      </Link>
+                    </NavigationMenuLink>
+                  </li>
+                                    <li>
+                    <NavigationMenuLink asChild>
+                      <Link href="/projects/Segway" className="block rounded-md p-2 hover:bg-accent">
+                        RISC-V CPU
+                      </Link>
+                    </NavigationMenuLink>
+                  </li>
+                                    <li>
+                    <NavigationMenuLink asChild>
+                      <Link href="/projects/Parallelism" className="block rounded-md p-2 hover:bg-accent">
+                        QOI Parallelism
+                      </Link>
+                    </NavigationMenuLink>
+                  </li>
+                                    <li>
+                    <NavigationMenuLink asChild>
+                      <Link href="/projects/CalorieCart" className="block rounded-md p-2 hover:bg-accent">
+                        CalorieCart
+                      </Link>
+                    </NavigationMenuLink>
+                  </li>
+                                    <li>
+                    <NavigationMenuLink asChild>
+                      <Link href="/projects/AI-LAB" className="block rounded-md p-2 hover:bg-accent">
+                        AI-LAB
+                      </Link>
+                    </NavigationMenuLink>
+                  </li>
+                  
+                </ul>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+
+            {/* Contact us — plain link */}
+            <NavigationMenuItem>
+              <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                <Link href="/contact">Contact me</Link>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+
+            {/* Games — dropdown */}
+            <NavigationMenuItem>
+              <NavigationMenuTrigger>Games</NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <ul className="grid w-[220px] gap-1 p-2">
+                  <li>
+                    <NavigationMenuLink asChild>
+                      <Link href="/games" className="block rounded-md p-2 hover:bg-accent">
+                        All Games
+                      </Link>
+                    </NavigationMenuLink>
+                  </li>
+                  <li>
+                    <NavigationMenuLink asChild>
+                      <Link href="/games/tic-tac-toe" className="block rounded-md p-2 hover:bg-accent">
+                        Tic-Tac-Toe
+                      </Link>
+                    </NavigationMenuLink>
+                  </li>
+                  <li>
+                    <NavigationMenuLink asChild>
+                      <Link href="/games/connect-4" className="block rounded-md p-2 hover:bg-accent">
+                        Connect 4
+                      </Link>
+                    </NavigationMenuLink>
+                  </li>
+                </ul>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+        </NavigationMenu>
+      </div>
+
+      {/* RIGHT: login + empty avatar */}
+      <div className="flex items-center gap-3">
+        <Button variant="outline" asChild>
+          <Link href="/login">Login</Link>
+        </Button>
+        <Avatar>
+          <AvatarImage src="" alt="" />
+          <AvatarFallback>
+            <User className="h-4 w-4" />
+          </AvatarFallback>
+        </Avatar>
+      </div>
+    </header>
+  );
+}

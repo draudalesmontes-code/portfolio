@@ -5,7 +5,7 @@ Chosen for **industry-standard + reuses what you have + teaches the skills you l
 | Layer | Choice | Why this one | New to you? |
 |-------|--------|--------------|-------------|
 | **Frontend** | TypeScript + **Next.js (React)** + Tailwind CSS | THE standard for portfolio/marketing sites; SSR/SSG = good SEO; one place to learn TS well | TS: yes |
-| **Core API** | **Java 21 + Spring Boot 3** (Spring Web, Spring Security, Spring Data JPA, Flyway) | Industry standard for enterprise REST APIs + auth; the Java you wanted to use | partly |
+| **Core API** | **Java 21 + Spring Boot 3.5.x** (Spring Web, Spring Security, Spring Data JPA, Flyway) | Industry standard for enterprise REST APIs + auth; the Java you wanted to use | partly |
 | **AI service** | **Python 3.12 + FastAPI** | Standard for AI/ML services; your BluHorizon RAG already lives here | no (you have it) |
 | **LLM (generation)** | **Free/cheap model by default** (self-hosted Ollama, or free-tier API e.g. Groq/Gemini) + **optional BYOK** (Claude/OpenAI/…) | Zero-setup for any visitor; near-zero cost (default capped); BYOK lets technical users bring a better model; provider abstraction keeps it swappable | partly |
 | **Embeddings (retrieval)** | **Sentence-Transformers** (local, **ours, fixed**) | Free, no extra API; outputs vectors for pgvector; must stay constant or search breaks — never BYOK | no |
@@ -22,7 +22,7 @@ Chosen for **industry-standard + reuses what you have + teaches the skills you l
 
 ## Versions / pins (proposed)
 - Node 20 LTS · Next.js 14+ · TypeScript 5.x
-- Java 21 (LTS) · Spring Boot 3.3+ · Maven (or Gradle)
+- Java 21 (LTS) · Spring Boot 3.5.15 (latest 3.x — no removed APIs) · Gradle
 - Python 3.12 · FastAPI (latest) · provider SDKs as needed for BYOK (e.g. `anthropic`, `openai`) · sentence-transformers (local embeddings)
 - PostgreSQL 16 · `pgvector` extension
 - Docker Engine + Compose v2 · kind or minikube · kubectl · Terraform 1.7+

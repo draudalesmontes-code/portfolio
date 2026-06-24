@@ -16,11 +16,12 @@ Quick record of choices made while planning, so we don't re-litigate them later.
 | 10 | **DB table design deferred** | Per Diego — entity inventory captured in `01-architecture.md`, schema designed in Sprint 2 | ⏳ open |
 | 11 | **Generation defaults to a free/cheap model; BYOK optional**; retrieval always ours | Zero-setup for any visitor; default capped (daily cap + rate limit) so cost stays ~$0; BYOK lets technical users bring their own/better model, key used in-memory per request, never stored/logged | ✅ |
 | 12 | **Runnable in-page demos = outreach/stretch goal** (not MVP) | "Try the tech inside the project page" (e.g. RAG Lab widget) is a later showcase, deferred per Diego | ✅ |
+| 13 | **Build tool for core-api = Gradle (Kotlin DSL, `build.gradle.kts`)** | Diego's choice; type-safe build script, best IDE support; app code stays 100% Java | ✅ |
+| 14 | **Spring Boot 3.5.15** (latest 3.x), not 4.x | No removed APIs (removals land in 4.x); maximal tutorial coverage; within reliable knowledge — per Diego "no deprecated functions" | ✅ |
 
 ## Open questions to resolve later
 - Project content source: **MDX files vs DB table** (plan: start MDX, migrate to DB only if needed).
 - Cheap-demo host: **Fly.io vs Render vs small EC2** (decide in Sprint 1).
 - Which **free/cheap default model**: self-hosted **Ollama** ($0/query, needs a bigger host) vs a
   free-tier API (**Groq**, **Gemini Flash**) ($0 but provider rate limits, server holds a key). Decide in Sprint 3.
-- Maven vs Gradle for the Java service.
 - Whether the separate trading-AI is in scope at all, or folded into "projects."
