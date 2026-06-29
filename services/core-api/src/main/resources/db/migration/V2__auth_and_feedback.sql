@@ -4,6 +4,8 @@ CREATE TABLE users (
     password_hash VARCHAR(255) NOT NULL,
     display_name VARCHAR(100) NOT NULL,
     role VARCHAR(20) NOT NULL DEFAULT 'USER',
+    email_verified BOOLEAN NOT NULL DEFAULT FALSE,
+    verification_token VARCHAR(255),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
