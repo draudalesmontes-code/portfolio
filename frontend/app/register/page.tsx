@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export default function LoginPage() {
+const inputClass = "border-[#e2cbc2] bg-[#fdf6f1] text-[#3a2228] placeholder:text-[#b89a93]";
+
+export default function RegisterPage() {
   const router = useRouter();
 
   return (
@@ -21,13 +23,13 @@ export default function LoginPage() {
         {/* warm wine header band */}
         <div className="flex items-center gap-2 bg-gradient-to-r from-[#651f2c] to-[#9a3a4a] px-8 py-4 text-[#fdf6f1]">
           <span className="size-2.5 rounded-full bg-[#fdf6f1]" />
-          <span className="text-xs font-semibold uppercase tracking-[0.25em]">Account</span>
+          <span className="text-xs font-semibold uppercase tracking-[0.25em]">New account</span>
         </div>
 
         <div className="p-8">
-          <h1 className="text-2xl font-bold text-[#3a2228]">Welcome back</h1>
+          <h1 className="text-2xl font-bold text-[#3a2228]">Create your account</h1>
           <p className="mt-1.5 text-sm text-[#6a4a4f]">
-            Manage your messages, match stats, and profile.
+            Join to message me, play the bots, and track your stats.
           </p>
 
           <form
@@ -39,6 +41,20 @@ export default function LoginPage() {
             className="mt-7 space-y-5"
           >
             <div className="space-y-2">
+              <Label htmlFor="name" className="text-[#6a4a4f]">
+                Full name
+              </Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Diego Raudales"
+                autoComplete="name"
+                required
+                className={inputClass}
+              />
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="email" className="text-[#6a4a4f]">
                 Email
               </Label>
@@ -48,7 +64,7 @@ export default function LoginPage() {
                 placeholder="you@example.com"
                 autoComplete="email"
                 required
-                className="border-[#e2cbc2] bg-[#fdf6f1] text-[#3a2228] placeholder:text-[#b89a93]"
+                className={inputClass}
               />
             </div>
 
@@ -60,9 +76,23 @@ export default function LoginPage() {
                 id="password"
                 type="password"
                 placeholder="••••••••"
-                autoComplete="current-password"
+                autoComplete="new-password"
                 required
-                className="border-[#e2cbc2] bg-[#fdf6f1] text-[#3a2228] placeholder:text-[#b89a93]"
+                className={inputClass}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirm" className="text-[#6a4a4f]">
+                Confirm password
+              </Label>
+              <Input
+                id="confirm"
+                type="password"
+                placeholder="••••••••"
+                autoComplete="new-password"
+                required
+                className={inputClass}
               />
             </div>
 
@@ -71,14 +101,14 @@ export default function LoginPage() {
               size="lg"
               className="w-full rounded-full bg-[#7b2e3c] font-semibold text-[#fdf6f1] hover:bg-[#651f2c]"
             >
-              Sign in
+              Create account
             </Button>
           </form>
 
           <p className="mt-6 text-center text-sm text-[#9a7d78]">
-            No account yet?{" "}
-            <Link href="/register" className="font-semibold text-[#7b2e3c] hover:underline">
-              Create one
+            Already have an account?{" "}
+            <Link href="/login" className="font-semibold text-[#7b2e3c] hover:underline">
+              Sign in
             </Link>
           </p>
         </div>

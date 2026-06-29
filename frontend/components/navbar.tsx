@@ -104,28 +104,11 @@ export default function Navbar() {
               </NavigationMenuLink>
             </NavigationMenuItem>
 
-            {/* Games — dropdown */}
+            {/* Games */}
             <NavigationMenuItem>
-              <NavigationMenuTrigger>Games</NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <ul className="grid w-[220px] gap-1 p-2">
-                  <li>
-                    <NavigationMenuLink asChild>
-                      <Link href="/games" className="block rounded-md p-2 hover:bg-accent">All Games</Link>
-                    </NavigationMenuLink>
-                  </li>
-                  <li>
-                    <NavigationMenuLink asChild>
-                      <Link href="/games/tic-tac-toe" className="block rounded-md p-2 hover:bg-accent">Tic-Tac-Toe</Link>
-                    </NavigationMenuLink>
-                  </li>
-                  <li>
-                    <NavigationMenuLink asChild>
-                      <Link href="/games/connect-4" className="block rounded-md p-2 hover:bg-accent">Connect 4</Link>
-                    </NavigationMenuLink>
-                  </li>
-                </ul>
-              </NavigationMenuContent>
+              <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                <Link href="/games">Games</Link>
+              </NavigationMenuLink>
             </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>

@@ -9,6 +9,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
+  --font-arcade: var(--font-press-start);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -126,5 +127,89 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+/* --- Contact page: organic animated background + floating cards --- */
+
+/* slow drifting gradient blobs */
+@keyframes blob-drift {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(6%, -8%) scale(1.12);
+  }
+  66% {
+    transform: translate(-7%, 5%) scale(0.92);
+  }
+}
+
+/* gentle vertical float for cards */
+@keyframes card-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-blob-drift {
+  animation: blob-drift 18s ease-in-out infinite;
+}
+
+.animate-card-float {
+  animation: card-float 6s ease-in-out infinite;
+}
+
+/* offset the title float so it bobs out of sync with the form card */
+.animate-card-float-delayed {
+  animation: card-float 7s ease-in-out infinite;
+  animation-delay: -2.5s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-blob-drift,
+  .animate-card-float,
+  .animate-card-float-delayed {
+    animation: none;
+  }
+}
+
+/* --- Games / arcade screen --- */
+
+/* blinking, bobbing loader squares */
+@keyframes arcade-blink {
+  0%, 100% {
+    opacity: 0.15;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-8px);
+  }
+}
+
+.animate-arcade-blink {
+  animation: arcade-blink 0.9s ease-in-out infinite;
+}
+
+/* subtle CRT flicker on the screen glow */
+@keyframes arcade-flicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; }
+  94% { opacity: 0.82; }
+  96% { opacity: 1; }
+}
+
+.animate-arcade-flicker {
+  animation: arcade-flicker 4s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-arcade-blink,
+  .animate-arcade-flicker {
+    animation: none;
   }
 }
