@@ -10,7 +10,7 @@ import {
   readApiErrorMessage,
   type Difficulty,
   type GameState,
-} from "../games";
+} from "@/app/games/games";
 
 type TicTacToeSymbol = "X" | "O";
 type TicTacToeCell = TicTacToeSymbol | null;
