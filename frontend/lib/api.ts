@@ -36,6 +36,22 @@ export async function apiFetch(
   }
 
   const csrf = await loadCsrfToken();
+  const response = await fetchWithCsrf(input, init, csrf);
+
+  if (![401, 403].includes(response.status)) {
+    return response;
+  }
+
+  csrfPromise = null;
+  const freshCsrf = await loadCsrfToken();
+  return fetchWithCsrf(input, init, freshCsrf);
+}
+
+async function fetchWithCsrf(
+  input: RequestInfo | URL,
+  init: RequestInit,
+  csrf: CsrfResponse,
+): Promise<Response> {
   const headers = new Headers(init.headers);
   headers.set(csrf.headerName, csrf.token);
 
@@ -45,8 +61,9 @@ export async function apiFetch(
     credentials: init.credentials ?? "include",
   });
 
-  if (response.status === 403) {
+  if ([401, 403].includes(response.status)) {
     csrfPromise = null;
   }
+
   return response;
 }
