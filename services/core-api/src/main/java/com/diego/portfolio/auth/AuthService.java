@@ -6,6 +6,7 @@ import com.diego.portfolio.auth.dto.LoginRequest;
 import com.diego.portfolio.auth.dto.RegisterRequest;
 import com.diego.portfolio.common.email.EmailService;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 import java.time.Duration;
 import java.time.OffsetDateTime;
@@ -28,25 +29,26 @@ public class AuthService {
 
     public void register(RegisterRequest request) {
         String normalizedEmail = normalizeEmail(request.getEmail());
-        if (userRepository.findByEmail(normalizedEmail).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already in use.");
+        Optional<User> existingUser = userRepository.findByEmail(normalizedEmail);
+        if (existingUser.isPresent()) {
+            resendVerificationOrReject(existingUser.get());
+            return;
         }
 
         String hashedPassword = passwordEncoder.encode(request.getPassword());
-        String verificationToken = UUID.randomUUID().toString();
 
         User user = new User();
         user.setEmail(normalizedEmail);
         user.setPasswordHash(hashedPassword);
         user.setDisplayName(request.getDisplayName().trim());
         user.setEmailVerified(false);
-        user.setVerificationToken(verificationToken);
-        user.setVerificationTokenExpiresAt(
-            OffsetDateTime.now().plus(VERIFICATION_TOKEN_TTL)
-        );
+        refreshVerificationToken(user);
 
         userRepository.save(user);
-        emailService.sendVerificationEmail(user.getEmail(), verificationToken);
+        emailService.sendVerificationEmail(
+            user.getEmail(),
+            user.getVerificationToken()
+        );
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -113,14 +115,36 @@ public class AuthService {
                 return;
             }
 
-            String verificationToken = UUID.randomUUID().toString();
-            user.setVerificationToken(verificationToken);
-            user.setVerificationTokenExpiresAt(
-                OffsetDateTime.now().plus(VERIFICATION_TOKEN_TTL)
-            );
+            refreshVerificationToken(user);
             userRepository.save(user);
-            emailService.sendVerificationEmail(user.getEmail(), verificationToken);
+            emailService.sendVerificationEmail(
+                user.getEmail(),
+                user.getVerificationToken()
+            );
         });
+    }
+
+    private void resendVerificationOrReject(User user) {
+        if (user.isEmailVerified()) {
+            throw new ResponseStatusException(
+                HttpStatus.CONFLICT,
+                "Email already in use."
+            );
+        }
+
+        refreshVerificationToken(user);
+        userRepository.save(user);
+        emailService.sendVerificationEmail(
+            user.getEmail(),
+            user.getVerificationToken()
+        );
+    }
+
+    private void refreshVerificationToken(User user) {
+        user.setVerificationToken(UUID.randomUUID().toString());
+        user.setVerificationTokenExpiresAt(
+            OffsetDateTime.now().plus(VERIFICATION_TOKEN_TTL)
+        );
     }
 
     private String normalizeEmail(String email) {

@@ -100,6 +100,36 @@ class AuthServiceTest {
     }
 
     @Test
+    void register_existingUnverifiedEmail_resendsVerificationInsteadOfConflict() {
+        RegisterRequest request = registerRequest(
+            " Diego@Example.com ",
+            "password123",
+            "Diego"
+        );
+        User user = verifiedUser();
+        user.setEmailVerified(false);
+        user.setVerificationToken("old-token");
+        when(userRepository.findByEmail("diego@example.com"))
+            .thenReturn(Optional.of(user));
+
+        authService.register(request);
+
+        assertNotNull(user.getVerificationToken());
+        assertFalse(user.getVerificationToken().isBlank());
+        assertFalse(user.getVerificationToken().equals("old-token"));
+        assertTrue(
+            user.getVerificationTokenExpiresAt()
+                .isAfter(OffsetDateTime.now())
+        );
+        verify(userRepository).save(user);
+        verify(emailService).sendVerificationEmail(
+            "diego@example.com",
+            user.getVerificationToken()
+        );
+        verifyNoInteractions(passwordEncoder, jwtUtil);
+    }
+
+    @Test
     void login_validCredentials_returnsJwt() {
         LoginRequest request = loginRequest(" Diego@Example.com ", "password123");
         User user = verifiedUser();
