@@ -14,7 +14,7 @@ import {
   readApiErrorMessage,
   type Difficulty,
   type GameState,
-} from "@/app/games/games";
+} from "@/lib/games";
 
 type Connect4GameState = GameState<
   Connect4Cell[][],
