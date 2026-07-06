@@ -1,30 +1,117 @@
 package com.diego.portfolio.games.tictactoe;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class TicTacToeEngineTest {
+    private TicTacToeEngine engine;
+    private MiniMax miniMax;
+    private Players players;
 
-    // Test that a valid move on an empty cell is accepted
-    @Test
-    void applyMove_emptyCell_accepted() {}
+    @BeforeEach
+    void setUp() {
+        miniMax = new MiniMax();
+        engine = new TicTacToeEngine(miniMax);
+        players = new Players(Symbol.X, Symbol.O);
+    }
 
-    // Test that a move on an occupied cell is rejected
     @Test
-    void applyMove_occupiedCell_rejected() {}
+    void hardDifficulty_takesImmediateWinningMove() {
+        Symbol[] board = {
+            Symbol.O, Symbol.O, null,
+            Symbol.X, Symbol.X, null,
+            null, null, null
+        };
 
-    // Test that three in a row on a row is detected as a win
-    @Test
-    void checkWin_threeInRow_returnsWin() {}
+        int move = engine.chooseComputerMove(
+            board,
+            Difficulty.HARD,
+            players
+        );
 
-    // Test that three in a diagonal is detected as a win
-    @Test
-    void checkWin_diagonal_returnsWin() {}
+        assertEquals(2, move);
+    }
 
-    // Test that a full board with no winner is detected as a draw
     @Test
-    void checkDraw_fullBoard_returnsDraw() {}
+    void hardDifficulty_blocksImmediateHumanWin() {
+        Symbol[] board = {
+            Symbol.X, Symbol.X, null,
+            Symbol.O, null, null,
+            null, null, null
+        };
 
-    // Test that a move after the game is over is rejected
+        int move = engine.chooseComputerMove(
+            board,
+            Difficulty.HARD,
+            players
+        );
+
+        assertEquals(2, move);
+    }
+
     @Test
-    void applyMove_gameOver_rejected() {}
+    void everyDifficulty_returnsOnlyRemainingMove() {
+        Symbol[] board = {
+            Symbol.X, Symbol.O, Symbol.X,
+            Symbol.X, Symbol.O, Symbol.O,
+            Symbol.O, Symbol.X, null
+        };
+
+        for (Difficulty difficulty : Difficulty.values()) {
+            assertEquals(
+                8,
+                engine.chooseComputerMove(board, difficulty, players)
+            );
+        }
+    }
+
+    @Test
+    void miniMax_doesNotModifyCallerBoard() {
+        Symbol[] board = {
+            Symbol.X, null, null,
+            null, Symbol.O, null,
+            null, null, null
+        };
+        Symbol[] original = board.clone();
+
+        miniMax.findBestMove(board, players);
+
+        assertArrayEquals(original, board);
+    }
+
+    @Test
+    void fullBoard_isRejected() {
+        Symbol[] board = {
+            Symbol.X, Symbol.O, Symbol.X,
+            Symbol.X, Symbol.O, Symbol.O,
+            Symbol.O, Symbol.X, Symbol.X
+        };
+
+        assertThrows(
+            IllegalStateException.class,
+            () -> engine.chooseComputerMove(
+                board,
+                Difficulty.HARD,
+                players
+            )
+        );
+    }
+
+    @Test
+    void invalidBoardSize_isRejected() {
+        Symbol[] board = new Symbol[8];
+
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> engine.chooseComputerMove(
+                board,
+                Difficulty.HARD,
+                players
+            )
+        );
+    }
 }

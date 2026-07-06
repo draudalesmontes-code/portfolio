@@ -1,17 +1,54 @@
 import { render, screen } from "@testing-library/react";
+import { describe, expect, test } from "vitest";
 import ChatMessage from "@/components/chat/ChatMessage";
 
-// Test that a USER role message renders with the correct style
-test("renders user message with correct role style", () => {});
+describe("ChatMessage", () => {
+  test("renders user messages with the user bubble style", () => {
+    render(<ChatMessage message={{ role: "user", content: "Hello" }} />);
 
-// Test that an AI role message renders with the correct style
-test("renders AI message with correct role style", () => {});
+    expect(screen.getByText("Hello")).toHaveClass("bg-foreground");
+    expect(screen.getByText("Hello").parentElement?.parentElement).toHaveClass(
+      "justify-end",
+    );
+  });
 
-// Test that message content is displayed correctly
-test("displays message content", () => {});
+  test("renders assistant messages with the assistant bubble style", () => {
+    render(<ChatMessage message={{ role: "assistant", content: "Hi!" }} />);
 
-// Test that citations render as a list when provided
-test("renders citations list when present", () => {});
+    expect(screen.getByText("Hi!")).toHaveClass("bg-background", "border");
+    expect(screen.getByText("Hi!").parentElement?.parentElement).toHaveClass(
+      "justify-start",
+    );
+  });
 
-// Test that no citations section renders when citations are empty
-test("hides citations section when empty", () => {});
+  test("renders citation sources when supplied", () => {
+    render(
+      <ChatMessage
+        message={{
+          role: "assistant",
+          content: "I found this.",
+          citations: [
+            {
+              chunk_text: "Portfolio information",
+              source: "about.md",
+              distance: 0.12,
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(screen.getByText("I found this.")).toBeInTheDocument();
+    expect(screen.getByText("about.md")).toBeInTheDocument();
+  });
+
+  test("does not render citation pills for an empty citation list", () => {
+    render(
+      <ChatMessage
+        message={{ role: "assistant", content: "No sources", citations: [] }}
+      />,
+    );
+
+    expect(screen.queryByText("about.md")).not.toBeInTheDocument();
+  });
+});

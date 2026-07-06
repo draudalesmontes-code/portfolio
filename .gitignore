@@ -30,3 +30,4 @@ Thumbs.db
 # logs / data
 *.log
 postgres_data/
+infra/vps/backups/

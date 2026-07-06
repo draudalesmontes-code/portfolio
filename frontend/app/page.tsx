@@ -11,18 +11,16 @@ export default function Home() {
       {/* Hero: blurred background, name on top, animated photo stack below */}
       <section className="relative mx-auto h-86 w-full max-w-2xl overflow-hidden rounded-xl">
         {/* blurred background image */}
-        <Image src="/uwBackground.webp" alt="" fill className="object-cover blur-sm" />
+        <Image src="/uwBackground.webp" alt="" fill priority sizes="(max-width: 672px) 100vw, 672px" className="object-cover blur-sm" />
         {/* dark overlay so white text stays readable */}
         <div className="absolute inset-0 bg-black/30" />
 
-        {/* content layered on top */}
         <div className="relative z-10 flex h-full flex-col items-center justify-center gap-6">
           <h2 className="text-3xl font-bold text-white drop-shadow">Diego Raudales</h2>
           <PhotoStack />
         </div>
       </section>
 
-      {/* Summary */}
       <section className="mx-auto mt-12 w-full max-w-2xl px-4 pb-16">
         <h2 className="text-2xl font-bold">Summary</h2>
         <p className="mt-4 leading-relaxed text-muted-foreground">

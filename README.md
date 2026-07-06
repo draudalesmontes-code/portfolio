@@ -10,7 +10,7 @@ applied AI/LLM work).
   can ask questions and get sourced answers. Works with **zero setup** via a free/cheap default
   model; technical users can optionally **Bring-Your-Own-Key** for their own model. Retrieval
   (embeddings + pgvector) is always ours. (Reuses the BluHorizon RAG pipeline.)
-- **AI mini-games** — play against an LLM opponent. Phase 1: tic-tac-toe + Connect-4 + a word game.
+- **AI mini-games** — play tic-tac-toe and Connect-4 against a computer opponent.
   Stretch: chess.
 - **Accounts & feedback** — guest play (anonymous score tracking) with optional login for
   persistent stats, plus a feedback form on the portfolio itself.
@@ -24,3 +24,9 @@ applied AI/LLM work).
 
 > Database table design is intentionally deferred — see the "Data" section in the architecture doc
 > for the entity list we'll flesh out together.
+
+## Production deployment
+
+For the low-cost single-VPS deployment with automatic HTTPS, persistent data,
+backups, and production environment setup, see
+[infra/vps/README.md](infra/vps/README.md).

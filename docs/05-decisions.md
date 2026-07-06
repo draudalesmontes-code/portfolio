@@ -7,7 +7,7 @@ Quick record of choices made while planning, so we don't re-litigate them later.
 | 1 | **Polyglot microservices**: Spring Boot (Java) core API + FastAPI (Python) AI service | Each is industry-standard for its job; uses the Java Diego wanted; reuses BluHorizon RAG; justifies Kubernetes | ✅ |
 | 2 | **Drop FAISS → Postgres `pgvector`** for RAG vectors | One DB for app + vectors; pgvector is the standard; FAISS removed per Diego | ✅ |
 | 3 | **AMA RAG bot** = "ask questions about Diego" grounded on resume/projects | Clarified "trade AI" = ask-me-anything bot | ✅ |
-| 4 | **Games**: tic-tac-toe + Connect-4 + word game first; **chess = stretch** | Ship simple games fast; chess is an outreach goal | ✅ |
+| 4 | **Games**: tic-tac-toe + Connect-4 first; **chess = stretch** | Ship simple games fast; chess is an outreach goal | ✅ |
 | 5 | **Phased deployment**: Compose → local k8s → AWS EKS/RDS, plus a cheap always-on demo | Low cost + fastest start; keeps a public URL for employers without EKS billing | ✅ |
 | 6 | **Frontend = Next.js (React + TS)** | Standard for portfolio sites; SSR/SSG SEO; best place to learn TypeScript | ✅ |
 | 7 | **Embeddings = Sentence-Transformers (local), fixed & ours** | Free, no extra API; feeds pgvector; must stay constant or search breaks — never BYOK | ✅ |

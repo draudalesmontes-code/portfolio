@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { User } from "lucide-react";
@@ -12,8 +14,27 @@ import {
 } from "@/components/ui/navigation-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/hooks/useAuth";
+
+function getInitials(displayName?: string) {
+  if (!displayName) {
+    return "";
+  }
+
+  return displayName
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0))
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
 
 export default function Navbar() {
+  const { user, isLoading } = useAuth();
+  const initials = getInitials(user?.displayName);
+
   return (
     <header className="flex items-center justify-between border-b px-6 py-3">
       {/* LEFT: logo + menu */}
@@ -114,15 +135,17 @@ export default function Navbar() {
         </NavigationMenu>
       </div>
 
-      {/* RIGHT: login + empty avatar */}
+      {/* RIGHT: authentication */}
       <div className="flex items-center gap-3">
         <Button variant="outline" asChild>
-          <Link href="/login">Login</Link>
+          <Link href={user ? "/account" : "/login"}>
+            {isLoading ? "Loading…" : user ? "Account" : "Login"}
+          </Link>
         </Button>
         <Avatar>
           <AvatarImage src="" alt="" />
           <AvatarFallback>
-            <User className="h-4 w-4" />
+            {initials || <User className="h-4 w-4" />}
           </AvatarFallback>
         </Avatar>
       </div>

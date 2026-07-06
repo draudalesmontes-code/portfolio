@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,10 +12,83 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { apiFetch } from "@/lib/api";
+
+type ContactFormData = {
+  firstName: string;
+  lastName: string;
+  contactEmail: string;
+  message: string;
+};
+
+type ContactRequest = {
+  authorName: string;
+  contactEmail: string;
+  message: string;
+};
+
+type ApiErrorResponse = {
+  timestamp: string;
+  status: number;
+  message: string;
+  path: string;
+  fields: Partial<Record<keyof ContactRequest, string>>;
+};
+
+type Submission = "idle" | "submitting" | "success" | "error";
+
+const INITIAL_CONTACT_FORM: ContactFormData = {
+  firstName: "",
+  lastName: "",
+  contactEmail: "",
+  message: "",
+};
 
 export default function ContactPage() {
-  const [sent, setSent] = useState(false);
+  const [form, setForm] = useState<ContactFormData>(INITIAL_CONTACT_FORM);
+  const [status, setStatus] = useState<Submission>("idle");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] =
+    useState<ApiErrorResponse["fields"]>({});
 
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const payload: ContactRequest = {
+      authorName: `${form.firstName} ${form.lastName}`.trim(),
+      contactEmail: form.contactEmail.trim(),
+      message: form.message.trim(),
+    };
+
+    setStatus("submitting");
+    setErrorMessage(null);
+    setFieldErrors({});
+
+    try {
+      const response = await apiFetch("/api/feedback", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const error: ApiErrorResponse = await response.json();
+        setStatus("error");
+        setErrorMessage(error.message);
+        setFieldErrors(error.fields ?? {});
+        return;
+      }
+
+      setStatus("success");
+      setForm(INITIAL_CONTACT_FORM);
+    } catch {
+      setStatus("error");
+      setErrorMessage("Unable to send your message. Please try again.");
+    }
+  }
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#e7e1d8] px-6 py-20">
       {/* organic animated background blobs */}
@@ -45,7 +118,7 @@ export default function ContactPage() {
           </CardHeader>
 
           <CardContent>
-            {sent ? (
+            {status === "success" ? (
               <div className="flex flex-col items-center gap-2 py-10 text-center">
                 <p className="text-lg font-semibold text-foreground/90">
                   Thanks for reaching out! 🌿
@@ -56,20 +129,33 @@ export default function ContactPage() {
               </div>
             ) : (
               <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  // TODO: wire to the API. For now just acknowledge locally.
-                  setSent(true);
-                }}
+                onSubmit={handleSubmit}
                 className="flex flex-col gap-5"
               >
+                {errorMessage && (
+                  <p
+                    role="alert"
+                    className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700"
+                  >
+                    {errorMessage}
+                  </p>
+                )}
+
                 <div className="flex flex-col gap-5 sm:flex-row">
                   <div className="flex-1 space-y-2">
                     <Label htmlFor="firstName">First name</Label>
                     <Input
                       id="firstName"
                       name="firstName"
-                      placeholder="Diego"
+                      value={form.firstName}
+                      onChange={(changeEvent) => {
+                        const firstName = changeEvent.currentTarget.value;
+                        setForm((current) => ({
+                          ...current,
+                          firstName,
+                        }));
+                      }}
+                      placeholder="John"
                       autoComplete="given-name"
                       required
                       className="bg-white/70"
@@ -80,25 +166,51 @@ export default function ContactPage() {
                     <Input
                       id="lastName"
                       name="lastName"
-                      placeholder="Raudales"
+                      value={form.lastName}
+                      onChange={(changeEvent) => {
+                        const lastName = changeEvent.currentTarget.value;
+                        setForm((current) => ({
+                          ...current,
+                          lastName,
+                        }));
+                      }}
+                      placeholder="Doe"
                       autoComplete="family-name"
                       required
                       className="bg-white/70"
                     />
                   </div>
                 </div>
+                {fieldErrors.authorName && (
+                  <p role="alert" className="text-sm text-red-700">
+                    {fieldErrors.authorName}
+                  </p>
+                )}
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="contactEmail">Email</Label>
                   <Input
-                    id="email"
-                    name="email"
+                    id="contactEmail"
+                    name="contactEmail"
                     type="email"
+                    value={form.contactEmail}
+                    onChange={(changeEvent) => {
+                      const contactEmail = changeEvent.currentTarget.value;
+                      setForm((current) => ({
+                        ...current,
+                        contactEmail,
+                      }));
+                    }}
                     placeholder="you@example.com"
                     autoComplete="email"
                     required
                     className="bg-white/70"
                   />
+                  {fieldErrors.contactEmail && (
+                    <p role="alert" className="text-sm text-red-700">
+                      {fieldErrors.contactEmail}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -106,19 +218,33 @@ export default function ContactPage() {
                   <Textarea
                     id="message"
                     name="message"
+                    value={form.message}
+                    onChange={(changeEvent) => {
+                      const message = changeEvent.currentTarget.value;
+                      setForm((current) => ({
+                        ...current,
+                        message,
+                      }));
+                    }}
                     placeholder="Tell me about your project or just say hi…"
                     required
                     rows={5}
                     className="resize-none bg-white/70"
                   />
+                  {fieldErrors.message && (
+                    <p role="alert" className="text-sm text-red-700">
+                      {fieldErrors.message}
+                    </p>
+                  )}
                 </div>
 
                 <Button
                   type="submit"
                   size="lg"
+                  disabled={status === "submitting"}
                   className="mt-1 w-full rounded-xl bg-gradient-to-r from-rose-500 via-fuchsia-500 to-violet-500 text-white transition-opacity hover:opacity-90"
                 >
-                  Send message
+                  {status === "submitting" ? "Sending…" : "Send message"}
                 </Button>
               </form>
             )}

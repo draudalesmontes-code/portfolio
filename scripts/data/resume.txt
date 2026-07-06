@@ -1,0 +1,113 @@
+DIEGO RAUDALES
+Madison, WI | draudalesmontes@gmail.com | (608) 949-0899
+linkedin.com/in/diego-raudales | github.com/draudalesmontes-code
+
+================================================================
+EDUCATION
+================================================================
+University of Wisconsin-Madison                    Aug 2022 - May 2026
+B.S., Computer Engineering, Computer Science | Madison, WI
+GPA: 3.623 | Dean's Honor List
+
+================================================================
+EXPERIENCE
+================================================================
+
+Espresso Americano                                 Jun 2025 - Aug 2025
+AWS Bedrock AgentCore Programmer
+- Prototyped an AWS Bedrock AgentCore backend, debugging and extending
+  three MCP tools for secure database access and integrating the memory,
+  identity, and gateway modules.
+- Wrote 30 Python unit/integration tests for MCP tools and automation
+  scripts; used Linux CLI and internal version control for
+  deployment/debugging.
+
+ITA at UW-Madison                                  Sep 2024 - May 2026
+Python Programming Instructor
+- Taught Python to cohorts of 13+ high school students for 20 hours per
+  week, covering data structures, algorithms, and code review, and
+  introduced test-driven development principles to reinforce software
+  quality.
+
+PixelPay                                           Jun 2024 - Aug 2024
+IT Intern
+- Resolved 30+ client-reported tickets and improved web product UI in
+  coordination with internal engineering teams following agile
+  methodologies.
+
+Sis Colombia                                       Jun 2023 - Aug 2023
+Database Intern
+- Built Python ETL pipelines on AWS, migrating over 1 TB of on-premises
+  database data to the cloud and delivering analytics dashboards in
+  Athena and QuickSight for client data teams.
+
+Aduo Grupo                                         Jun 2022 - Aug 2022
+Frontend Web Developer
+- Shipped two client websites in close collaboration with digital
+  designers, translating visual designs into responsive frontend
+  implementations.
+
+================================================================
+PROJECTS
+================================================================
+
+Full-Stack RAG Application - BluHorizon AI (2026)
+- Designed and built a full-stack AI querying system with Python FastAPI,
+  FAISS vector search, and a HyDE retrieval pipeline, with 45 automated
+  tests across the REST API, and migrated the data layer to PostgreSQL.
+
+Full-Stack Boggle Game - Software Engineering (2026)
+- Delivered a multiplayer game in a Scrum team of six with a Java Spring
+  Boot backend following the controller-service-repository pattern, a
+  React frontend, a six-endpoint REST API, SQL integration, 128 unit
+  tests, and CI/CD throughout.
+- Deployed to AWS EKS with self-managed nodes: frontend and backend
+  Deployments behind Kubernetes Services, with ConfigMaps and Secrets
+  externalizing database configuration.
+- Used Helm to install External Secrets Operator, syncing credentials
+  from AWS Secrets Manager via an IAM role for KMS-encrypted storage, and
+  configured AWS certificates for HTTPS on a custom domain.
+
+QOI Image Codec - Capstone (2025)
+- Built a C++20 lossless QOI image codec; achieved a 10x encoding speedup
+  with OpenMP and 5.9 GB/s GPU decode throughput (vs. 4.2 GB/s on CPU),
+  benchmarked on a SLURM HPC cluster.
+
+Microcontroller Blackjack Game - Embedded Systems (2025)
+- Built a microcontroller-based Blackjack game in C/C++, mapping I2C,
+  SPI, and GPIO peripherals for display, controls, and game-state logic.
+
+Superscalar RISC Pipelined Processor - Multi-Processor Design (2025)
+- Designed and implemented a superscalar RISC pipelined processor in
+  SystemVerilog, building all five pipeline stages with data forwarding
+  for hazard resolution, multi-issue superscalar execution, and a cache
+  system for instruction and data memory.
+
+Self-Balancing Segway ASIC - Digital System Design & Synthesis (2025)
+- Designed a complete RTL-to-gates self-balancing Segway controller in
+  SystemVerilog: PID pitch balance control, differential PWM motor drive,
+  A2D interface, SPI inertial sensor interface, UART command receiver,
+  and a steering enable FSM.
+- Synthesized to a gate-level netlist at a 333 MHz target clock using
+  Synopsys Design Compiler on the SAED32 32nm library; verified with 10+
+  ModelSim testbenches covering balance response, steering, and
+  overcurrent safety cutoff.
+
+LEGO Marketplace App - Mobile Systems (2025)
+- Built a native Android app in Kotlin with MVVM architecture, barcode
+  scanning, location services, Firebase authentication, and real-time
+  database access.
+
+================================================================
+SKILLS
+================================================================
+Languages:   Python, Java, JavaScript, TypeScript, C++, C, SQL,
+             HTML/CSS, SystemVerilog, Kotlin
+Frameworks:  React, Spring Boot, FastAPI, REST APIs, Kubernetes, Helm
+AI & Data:   Claude (Claude Code), ChatGPT Codex, AWS Bedrock, FAISS,
+             PostgreSQL, ETL pipelines, Docker, AWS
+Systems:     CUDA, OpenMP, RISC-V, Assembly, HPC/SLURM, I2C, SPI, UART,
+             GPIO, Altium, PCB
+Practices:   Agile/Scrum, CI/CD, Git, code review, automated testing,
+             Test-Driven Development, Linux CLI, Algorithms
+Certification: NVIDIA CUDA Workshop Certificate, GTC 2026

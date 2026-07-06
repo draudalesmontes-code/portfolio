@@ -53,12 +53,12 @@ default model), with **optional BYOK** for a better/own model.
 - **Done when:** a visitor with no key gets a grounded, cited answer; pasting a key uses their model.
 
 ## Sprint 4 — Mini-games vs the LLM · ~1.5 weeks
-Goal: play tic-tac-toe, Connect-4, and a word game against an LLM; scores tracked.
+Goal: play tic-tac-toe and Connect-4 against a computer opponent; scores tracked.
 - [ ] Flyway `V4`: `game_sessions` / scores (guest + user).
 - [ ] Game engines in Spring Boot (move validation, win detection) — start with **tic-tac-toe**.
 - [ ] `/ai/games/move`: board state → configurable LLM provider (BYOK) → move; Spring validates + persists.
-- [ ] Game board UI + leaderboard/your-stats; then Connect-4, then the word game.
-- **Done when:** you can play all three, and scores persist (merged into account on login).
+- [ ] Game board UI + leaderboard/your-stats; then Connect-4.
+- **Done when:** you can play both games, and scores persist (merged into account on login).
 
 ## Sprint 5 — Kubernetes (local) · ~1 week
 Goal: the same images run on k8s, not just Compose.

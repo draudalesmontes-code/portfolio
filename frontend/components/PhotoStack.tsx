@@ -24,6 +24,7 @@ export default function PhotoStack() {
           src="/linkedInPic.jpg"
           alt="Diego Raudales"
           fill
+          sizes="160px"
           className="object-cover object-top"
         />
       </div>
@@ -38,6 +39,7 @@ export default function PhotoStack() {
           src="/engineeringPic.jpg"
           alt="Diego engineering"
           fill
+          sizes="160px"
           className="object-cover object-top"
         />
       </div>

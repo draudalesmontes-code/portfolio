@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   BarChart3,
   Calendar,
   Camera,
   KeyRound,
+  LogOut,
   Mail,
   Trophy,
   User,
@@ -13,32 +15,31 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/hooks/useAuth";
+import { apiFetch } from "@/lib/api";
 
-// ── mock data (no backend yet) ──────────────────────────────────────────────
-const USER = {
-  name: "Diego Raudales",
-  email: "draudalesmontes@gmail.com",
-  joined: "2026-03-04",
+type SentMessage = {
+  id: number;
+  subject: string;
+  sentAt: string;
 };
 
-type MsgStatus = "sent" | "read" | "responded";
-const MESSAGES: { subject: string; sentAt: string; status: MsgStatus }[] = [
-  { subject: "Collaboration on a RAG project", sentAt: "2026-06-24", status: "responded" },
-  { subject: "Question about the Segway ASIC", sentAt: "2026-06-18", status: "read" },
-  { subject: "Internship availability", sentAt: "2026-06-11", status: "read" },
-  { subject: "Just saying hi 👋", sentAt: "2026-06-02", status: "sent" },
-];
+type GameStats = {
+  totalWins: number;
+  winsByDifficulty: {
+    level: string;
+    count: number;
+  }[];
+  winsByGame: {
+    game: string;
+    count: number;
+  }[];
+};
 
-const WINS = [
-  { level: "Easy", count: 12, color: "#6f8f3f" },
-  { level: "Medium", count: 7, color: "#c89a3c" },
-  { level: "Hard", count: 3, color: "#7b2e3c" },
-];
-
-const STATUS_STYLE: Record<MsgStatus, string> = {
-  sent: "bg-[#3a2228]/8 text-[#6a4a4f]",
-  read: "bg-[#c89a3c]/22 text-[#8a6516]",
-  responded: "bg-[#6f8f3f]/20 text-[#4d6b29]",
+const DIFFICULTY_COLORS: Record<string, string> = {
+  Easy: "#6f8f3f",
+  Medium: "#c89a3c",
+  Hard: "#7b2e3c",
 };
 
 const NAV = [
@@ -76,7 +77,114 @@ const inputClass =
 const saveBtnClass = "rounded-full bg-[#7b2e3c] font-semibold text-[#fdf6f1] hover:bg-[#651f2c]";
 
 export default function AccountPage() {
+  const router = useRouter();
+  const { user, isLoading, logout } = useAuth();
   const [section, setSection] = useState<Section>("account");
+  const [logoutError, setLogoutError] = useState<string | null>(null);
+  const [messages, setMessages] = useState<SentMessage[]>([]);
+  const [messagesLoading, setMessagesLoading] = useState(true);
+  const [messagesError, setMessagesError] = useState<string | null>(null);
+  const [stats, setStats] = useState<GameStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.replace("/login");
+    }
+  }, [isLoading, router, user]);
+
+  useEffect(() => {
+    if (isLoading || !user) {
+      return;
+    }
+
+    let active = true;
+
+    async function loadMessages() {
+      setMessagesLoading(true);
+      setMessagesError(null);
+      try {
+        const response = await apiFetch("/api/feedback/mine");
+        if (!response.ok) {
+          throw new Error("Messages request failed.");
+        }
+        const data = (await response.json()) as SentMessage[];
+        if (active) {
+          setMessages(data);
+        }
+      } catch {
+        if (active) {
+          setMessagesError("Unable to load your sent messages.");
+        }
+      } finally {
+        if (active) {
+          setMessagesLoading(false);
+        }
+      }
+    }
+
+    async function loadStats() {
+      setStatsLoading(true);
+      setStatsError(null);
+      try {
+        const response = await apiFetch("/api/games/stats");
+        if (!response.ok) {
+          throw new Error("Stats request failed.");
+        }
+        const data = (await response.json()) as GameStats;
+        if (active) {
+          setStats(data);
+        }
+      } catch {
+        if (active) {
+          setStatsError("Unable to load your game statistics.");
+        }
+      } finally {
+        if (active) {
+          setStatsLoading(false);
+        }
+      }
+    }
+
+    void loadMessages();
+    void loadStats();
+
+    return () => {
+      active = false;
+    };
+  }, [isLoading, user]);
+
+  async function handleLogout() {
+    setLogoutError(null);
+    try {
+      await logout();
+      router.replace("/login");
+      router.refresh();
+    } catch {
+      setLogoutError("Unable to log out. Please try again.");
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#f8efe8] via-[#f0dcd6] to-[#e6cbc6]">
+        <p className="text-sm text-[#6a4a4f]" role="status">
+          Loading your account…
+        </p>
+      </main>
+    );
+  }
+
+  if (!user) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#f8efe8] via-[#f0dcd6] to-[#e6cbc6]">
+        <p className="text-sm text-[#6a4a4f]" role="status">
+          Redirecting to sign in…
+        </p>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#f8efe8] via-[#f0dcd6] to-[#e6cbc6] text-[#3a2228]">
@@ -89,8 +197,10 @@ export default function AccountPage() {
                 <User className="size-6" />
               </div>
               <div className="min-w-0">
-                <p className="truncate font-bold leading-tight text-[#3a2228]">{USER.name}</p>
-                <p className="truncate text-xs text-[#9a7d78]">{USER.email}</p>
+                <p className="truncate font-bold leading-tight text-[#3a2228]">
+                  {user.displayName}
+                </p>
+                <p className="truncate text-xs text-[#9a7d78]">{user.email}</p>
               </div>
             </div>
 
@@ -113,15 +223,42 @@ export default function AccountPage() {
                   </button>
                 );
               })}
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex w-full items-center gap-2.5 rounded-full px-3.5 py-2 text-left text-sm font-medium text-[#7b2e3c] transition-colors hover:bg-[#f1ddd6]"
+              >
+                <LogOut className="size-4 shrink-0" />
+                Log out
+              </button>
             </nav>
+            {logoutError && (
+              <p className="mt-3 text-xs text-red-700" role="alert">
+                {logoutError}
+              </p>
+            )}
           </Card>
         </aside>
 
         {/* ── content ── */}
         <section className="min-w-0 flex-1">
-          {section === "account" && <AccountSection />}
-          {section === "messages" && <MessagesSection />}
-          {section === "stats" && <StatsSection />}
+          {section === "account" && <AccountSection email={user.email} />}
+          {section === "messages" && (
+            <MessagesSection
+              messages={messages}
+              isLoading={messagesLoading}
+              error={messagesError}
+            />
+          )}
+          {section === "stats" && (
+            <StatsSection
+              displayName={user.displayName}
+              createdAt={user.createdAt}
+              stats={stats}
+              isLoading={statsLoading}
+              error={statsError}
+            />
+          )}
         </section>
       </div>
     </main>
@@ -129,7 +266,7 @@ export default function AccountPage() {
 }
 
 // ── Account ──────────────────────────────────────────────────────────────────
-function AccountSection() {
+function AccountSection({ email }: { email: string }) {
   return (
     <Panel title="Account">
       <div className="space-y-5">
@@ -159,7 +296,7 @@ function AccountSection() {
               <Label htmlFor="acc-email" className="text-[#6a4a4f]">
                 New email
               </Label>
-              <Input id="acc-email" type="email" defaultValue={USER.email} className={inputClass} />
+              <Input id="acc-email" type="email" defaultValue={email} className={inputClass} />
             </div>
             <Button className={saveBtnClass}>Save email</Button>
           </div>
@@ -198,13 +335,40 @@ function AccountSection() {
 }
 
 // ── Messages ─────────────────────────────────────────────────────────────────
-function MessagesSection() {
+function MessagesSection({
+  messages,
+  isLoading,
+  error,
+}: {
+  messages: SentMessage[];
+  isLoading: boolean;
+  error: string | null;
+}) {
   return (
     <Panel title="Sent Messages">
+      {isLoading && (
+        <p role="status" className="text-sm text-[#9a7d78]">
+          Loading sent messages…
+        </p>
+      )}
+      {error && (
+        <p
+          role="alert"
+          className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700"
+        >
+          {error}
+        </p>
+      )}
+      {!isLoading && !error && messages.length === 0 && (
+        <Card className="p-5 text-sm text-[#9a7d78]">
+          You have not sent any messages yet.
+        </Card>
+      )}
+      {!isLoading && !error && messages.length > 0 && (
       <Card className="divide-y divide-[#e7d3ca]">
-        {MESSAGES.map((msg) => (
+        {messages.map((msg) => (
           <div
-            key={msg.subject}
+            key={msg.id}
             className="flex flex-wrap items-center justify-between gap-3 p-4"
           >
             <div className="min-w-0">
@@ -218,30 +382,38 @@ function MessagesSection() {
                 })}
               </p>
             </div>
-            <span
-              className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider ${STATUS_STYLE[msg.status]}`}
-            >
-              {msg.status}
+            <span className="shrink-0 rounded-full bg-[#3a2228]/8 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-[#6a4a4f]">
+              Sent
             </span>
           </div>
         ))}
       </Card>
-      <p className="mt-3 text-xs text-[#9a7d78]">
-        Status updates as the recipient reads and replies.
-      </p>
+      )}
     </Panel>
   );
 }
 
 // ── Stats ────────────────────────────────────────────────────────────────────
-function StatsSection() {
-  const joined = new Date(USER.joined);
+function StatsSection({
+  displayName,
+  createdAt,
+  stats,
+  isLoading,
+  error,
+}: {
+  displayName: string;
+  createdAt: string;
+  stats: GameStats | null;
+  isLoading: boolean;
+  error: string | null;
+}) {
+  const joined = new Date(createdAt);
   const now = new Date();
   const daysMember = Math.max(
     0,
     Math.floor((now.getTime() - joined.getTime()) / 86_400_000),
   );
-  const totalWins = WINS.reduce((sum, w) => sum + w.count, 0);
+  const totalWins = stats?.totalWins ?? 0;
 
   // next anniversary
   const nextAnniv = new Date(joined);
@@ -257,38 +429,73 @@ function StatsSection() {
           <User className="size-8" />
         </div>
         <div>
-          <h3 className="text-2xl font-bold text-[#3a2228]">{USER.name}</h3>
+          <h3 className="text-2xl font-bold text-[#3a2228]">{displayName}</h3>
           <p className="text-sm text-[#9a7d78]">
             {totalWins} total wins · {daysMember} days a member
           </p>
         </div>
       </div>
 
+      {isLoading && (
+        <p role="status" className="text-sm text-[#9a7d78]">
+          Loading game statistics…
+        </p>
+      )}
+      {error && (
+        <p
+          role="alert"
+          className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700"
+        >
+          {error}
+        </p>
+      )}
+
+      {!isLoading && !error && stats && (
+        <>
       {/* games won by difficulty */}
       <p className="mb-3 flex items-center gap-2 text-sm font-semibold text-[#6a4a4f]">
         <Trophy className="size-4 text-[#7b2e3c]" /> Wins vs. bots
       </p>
       <div className="grid gap-4 sm:grid-cols-3">
-        {WINS.map((w) => {
+        {stats.winsByDifficulty.map((w) => {
           const pct = totalWins ? Math.round((w.count / totalWins) * 100) : 0;
+          const color = DIFFICULTY_COLORS[w.level] ?? "#7b2e3c";
           return (
             <Card key={w.level} className="p-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-[#6a4a4f]">{w.level}</span>
-                <span className="size-2.5 rounded-full" style={{ background: w.color }} />
+                <span className="size-2.5 rounded-full" style={{ background: color }} />
               </div>
               <p className="mt-2 text-4xl font-bold text-[#3a2228]">{w.count}</p>
               {/* mini bar */}
               <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-[#f0ddd6]">
                 <div
                   className="h-full rounded-full"
-                  style={{ width: `${pct}%`, background: w.color }}
+                  style={{ width: `${pct}%`, background: color }}
                 />
               </div>
             </Card>
           );
         })}
       </div>
+
+      <p className="mt-8 mb-3 flex items-center gap-2 text-sm font-semibold text-[#6a4a4f]">
+        <BarChart3 className="size-4 text-[#7b2e3c]" /> Wins by game
+      </p>
+      <div className="grid gap-4 sm:grid-cols-2">
+        {stats.winsByGame.map((game) => (
+          <Card key={game.game} className="p-4">
+            <p className="text-sm font-medium text-[#6a4a4f]">
+              {game.game}
+            </p>
+            <p className="mt-2 text-4xl font-bold text-[#3a2228]">
+              {game.count}
+            </p>
+          </Card>
+        ))}
+      </div>
+        </>
+      )}
 
       {/* anniversary */}
       <p className="mt-8 mb-3 flex items-center gap-2 text-sm font-semibold text-[#6a4a4f]">

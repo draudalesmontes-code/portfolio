@@ -3,6 +3,8 @@ import { Manrope, Geist_Mono, Press_Start_2P } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
+import AiChatModal from "@/components/aiChatModal";
+import { AuthProvider } from "@/hooks/useAuth";
 
 const manrope = Manrope({
   variable: "--font-sans",
@@ -36,9 +38,12 @@ export default function RootLayout({
       className={`${manrope.variable} ${geistMono.variable} ${pressStart.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <Navbar />
-        {children}
-        <Footer />
+        <AuthProvider>
+          <Navbar />
+          {children}
+          <Footer />
+          <AiChatModal />
+        </AuthProvider>
       </body>
     </html>
   );

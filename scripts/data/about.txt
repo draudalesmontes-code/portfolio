@@ -1,0 +1,133 @@
+================================================================
+ABOUT DIEGO RAUDALES
+================================================================
+
+WHO I AM
+
+I am a May 2026 graduate of the University of Wisconsin-Madison with a
+dual B.S. in Computer Engineering and Computer Science. But the short
+version of who I am is this: I am someone who has been genuinely in love
+with building things with code for a long time, who has lived across very
+different parts of the world, and who tries, constantly, to learn the
+next thing.
+
+
+WHERE I COME FROM
+
+I am an international person in the fullest sense. I hold dual Spanish and
+Honduran citizenship, and I grew up across Honduras and Colombia before
+coming to the United States for university. I attended high school at
+Academia Los Pinares in Tegucigalpa, Honduras, and at Colegio Anglo
+Colombiano in Bogota, Colombia, and then spent four years at UW-Madison
+in the US.
+
+Living in three countries shapes how you work. I am fluent in both
+English and Spanish, and moving between cultures has made me genuinely
+adaptable, comfortable joining new teams, working across differences, and
+adjusting to environments that do not look like the last one. I do not
+need things to be familiar to do good work. That multicultural background
+is one of the things I value most about myself, and it is part of why I
+am open to opportunities anywhere, in the US or in Europe.
+
+
+WORK AUTHORIZATION
+
+To be transparent about my status: I am authorized to work in the United
+States on F-1 OPT, beginning July 1, 2026, and I am eligible for the STEM
+OPT extension, which together provide work authorization for roughly
+three years with no sponsorship required during that period. Beyond that,
+continuing in the US would require H-1B sponsorship. Separately, as a
+Spanish (EU) citizen, I have full, permanent work authorization
+throughout the European Union with no sponsorship needed at all. I am
+happy to discuss the details of either path at any stage.
+
+
+HOW I GOT INTO THIS
+
+I have been coding for a long time, and it started with games. In high
+school I won an award for the best video game using RPG Maker, and that
+early thrill, building a world and a system that other people could
+actually play, is still the same feeling that motivates me now. It is why
+so much of my project work circles back to games and interactive systems,
+and why I care about building things people genuinely use, not just
+things that technically work.
+
+That early spark grew into a serious engineering path: embedded systems
+and digital hardware design, applied AI, backend engineering, and
+performance work. I genuinely enjoy the whole range, from writing
+firmware that talks to hardware over I2C and SPI, to designing a CPU in
+SystemVerilog, to building a retrieval pipeline for a RAG system, to
+parallelizing an image codec on a GPU.
+
+
+WHAT I AM ALWAYS DOING: LEARNING
+
+If there is one thing that defines how I work, it is that I am relentless
+about learning new technology stacks. I do not wait for a class or a job
+to tell me to pick something up, I just build with it. Right now, outside
+of my job search, I am:
+
+- Building a portfolio platform that is really a small distributed system
+  (TypeScript, Spring Boot, Python, PostgreSQL with pgvector, Docker,
+  Kubernetes), with a RAG chatbot and AI mini-games built in. I learn by
+  building something real, not by following tutorials.
+- Practicing with Unreal Engine 5, including a 3D platformer project
+  called Paper World that I am developing, which connects back to where I
+  started: making games.
+- Strengthening my TypeScript skills (currently beginner-to-intermediate)
+  by converting one of my React projects over to it.
+
+I dedicate a serious amount of time to this, well over 500 hours of
+focused project and learning work, and honestly, in this stretch, I spend
+almost every waking second busy: coding, building projects, and applying
+to jobs. I have been working extremely hard on this job search, treating
+it like a full-time effort, because I care a lot about landing somewhere I
+can do real engineering and keep growing.
+
+I also took my learning beyond the screen. I attended NVIDIA's GTC
+conference, sitting in on a range of technical sessions, and earned an
+NVIDIA CUDA workshop certificate there (GTC 2026). My coursework backs
+this up: a strong foundation across Introduction to Artificial
+Intelligence, Introduction to Algorithms, Machine Organization and
+Programming, Computer Architecture, Digital System Design and Synthesis,
+Microprocessor Systems, Operating-systems-level and software-engineering
+courses, plus a full electrical and computer engineering core (circuits,
+electronics, signals, electrodynamics). I finished with a 3.623 GPA and
+multiple terms on the Dean's Honor List, including a 4.0 in my final
+semester. (My official transcript is attached.)
+
+
+HOW I WORK WITH OTHERS
+
+In almost every academic project I have been part of, I have ended up
+taking the lead, not because I sought the title, but because I tend to be
+the person organizing the work and keeping it moving. And something I am
+quietly proud of: I spend real time helping my teammates, even when it
+brings me no direct benefit. If someone is stuck, I will sit with them and
+work through it, because I genuinely believe that is how good software
+gets built. I believe in collaboration, not as a buzzword, but as the
+actual mechanism by which teams produce things none of them could alone.
+My two years teaching Python to high school students come from the same
+place, I like helping other people get better at this.
+
+
+OUTSIDE OF CODE
+
+I am an active, physical person. I played rugby competitively and won
+second place with Colegio Anglo Colombiano in Bogota, which taught me a
+lot about teamwork under pressure. I am scuba certified, and I love diving
+and being in the water. And I am in the gym regularly, training is a big
+part of how I keep my energy and discipline.
+
+For music, I am an alt-rock person through and through, Glass Animals is
+my favorite band. (Editor's note: "happy fits" may refer to the band The
+Happy Fits, also alt-rock, confirm which you meant.)
+
+
+THE THROUGH-LINE
+
+Put it all together and the pattern is consistent: someone who fell in
+love with building things early, who has lived and adapted across multiple
+cultures, who works hard and helps the people around him, and who never
+stops trying to learn the next tool, the next stack, the next idea. That
+is what I would bring to a team.
