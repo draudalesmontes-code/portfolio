@@ -44,6 +44,11 @@ public class SecurityConfig {
         CookieCsrfTokenRepository csrfTokenRepository
     ) throws Exception {
         http.csrf(csrf -> csrf
+                .ignoringRequestMatchers(
+                    "/auth/register",
+                    "/auth/login",
+                    "/auth/resend-verification"
+                )
                 .csrfTokenRepository(csrfTokenRepository)
                 .csrfTokenRequestHandler(
                     new SpaCsrfTokenRequestHandler()

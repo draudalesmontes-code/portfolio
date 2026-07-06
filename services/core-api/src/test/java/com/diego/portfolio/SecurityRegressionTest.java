@@ -61,7 +61,7 @@ class SecurityRegressionTest {
 
     @Test
     void unexpectedJsonProperties_areRejected() throws Exception {
-        mockMvc.perform(post("/auth/login").with(csrf())
+        mockMvc.perform(post("/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {
@@ -72,6 +72,20 @@ class SecurityRegressionTest {
                     """))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.status").value(400));
+    }
+
+    @Test
+    void publicAuthEndpoints_doNotRequireCsrfToken() throws Exception {
+        mockMvc.perform(post("/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                      "email": "public@example.com",
+                      "password": "password123",
+                      "displayName": "Public User"
+                    }
+                    """))
+            .andExpect(status().isCreated());
     }
 
     @Test
