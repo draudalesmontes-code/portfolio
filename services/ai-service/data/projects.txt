@@ -1,0 +1,514 @@
+================================================================
+DIEGO RAUDALES - PROJECTS (in depth)
+github.com/draudalesmontes-code
+================================================================
+
+Detailed descriptions based on the actual contents of the public
+repositories (READMEs, file structure, and language breakdowns). Each
+entry includes: what it is, the architecture, the technical stack, the
+interesting engineering decisions, what I learned, and talking points for
+interviews. Where my resume and a repository differ, I note it so the two
+can be reconciled before anyone reviews the code.
+
+
+################################################################
+1. BluHorizon AI - Full-Stack RAG Application
+   Language: Python | repo: BluHorizon-AI-drm
+################################################################
+
+WHAT IT IS
+A full-stack Retrieval-Augmented Generation (RAG) application I designed
+and built. A user ingests documents (PDF, DOCX, XLSX); the system chunks
+and embeds them into a FAISS vector store, and the user queries that
+corpus through an AI chat interface backed by the Anthropic Claude API.
+The whole thing is containerized and runs with Docker Compose.
+
+ARCHITECTURE (from the repo)
+docker-compose.yml orchestrates two services:
+  - Backend (port 8000)
+      routers/   -> chat, RAG, and agent endpoints
+      services/
+        rag_pipeline.py        -> the HyDE-based RAG pipeline
+        embedding.py           -> vector embedding generation
+        store_faiss_vector.py  -> FAISS vector store operations
+        sqlite.py              -> SQLite integration
+  - Frontend (port 3000)
+      a Flutter (Dart) mobile app
+
+THE INTERESTING ENGINEERING
+- HyDE retrieval pipeline (Hypothetical Document Embeddings): instead of
+  embedding the raw user question and searching with it, the system first
+  asks the model to generate a hypothetical answer, then embeds THAT and
+  uses it for semantic retrieval. The intuition is that a hypothetical
+  answer lives closer in embedding space to the real answer passages than
+  the question does, so recall improves. This is a genuinely non-trivial
+  retrieval technique, not just "embed and top-k."
+- Gap-aware chunk filtering: rather than always returning a fixed number
+  of chunks (top-k), it looks at the similarity scores and uses a dynamic
+  score-gap cutoff, keeping chunks until there is a meaningful drop in
+  relevance. This avoids stuffing the context with weak matches.
+- Document ingestion across multiple formats (PDF, DOCX, XLSX) into a
+  unified embedding store.
+- Web-search augmentation via the Tavily API for queries that benefit
+  from fresh external information.
+
+TECHNICAL STACK
+  Backend:         Python, FastAPI, Uvicorn
+  AI:              Anthropic Claude API
+  Vector search:   FAISS (CPU)
+  Embeddings:      Sentence-Transformers
+  ML utilities:    PyTorch, tiktoken (tokenization / token counting)
+  External search: Tavily API
+  Persistence:     SQLite / Firebase (per repo); migrated to PostgreSQL
+                   (per current resume)
+  Frontend:        Flutter (Dart), mobile-first
+  Container:       Docker, Docker Compose
+
+WHAT I LEARNED
+With RAG, the model is rarely the hard part; retrieval and data are. The
+bulk of the engineering, and the bulk of the quality, lived in the HyDE
+pipeline and the gap-aware filtering, i.e. in how queries get turned into
+the right context, not in the call to the LLM. That lesson shapes how I
+think about applied AI generally: the infrastructure around the model is
+where the real work is.
+
+INTERVIEW TALKING POINTS
+- Explain HyDE and why it beats naive query embedding (recall).
+- Explain the dynamic score-gap cutoff vs. fixed top-k (precision /
+  context quality).
+- Walk the request path: question -> HyDE answer -> embed -> FAISS search
+  -> gap filter -> context -> Claude -> response.
+
+NOTE TO SELF (IMPORTANT)
+The repo README documents a Flutter frontend and SQLite/Firebase storage.
+The resume says FastAPI + PostgreSQL with 45 automated tests. If the
+PostgreSQL migration and test suite are the current state, update the
+README so the repo matches the resume. If an interviewer opens the repo
+and sees Flutter/SQLite, your spoken story must still line up. Decide on
+one canonical description and make resume + README agree.
+
+
+################################################################
+2. Boggle Buddies - Real-Time Multiplayer Word Game
+   Language: Java (primary) | repo: boggle-app
+################################################################
+
+WHAT IT IS
+A real-time multiplayer word game inspired by Boggle, built by a Scrum
+team of six. Players race to find valid words on a randomly generated
+letter board within a time limit. It supports live multiplayer matches
+AND a player-vs-computer mode, with guest play or registered accounts
+that track long-term stats (wins/losses).
+
+GAMEPLAY SYSTEMS (from the spec/README)
+- Board-shuffling algorithms to generate the randomized letter grid.
+- Dictionary-based word validation (is this a real word?).
+- Rule enforcement, e.g. no duplicate words within a match.
+- A dynamic scoring screen that distinguishes UNIQUE words (only you
+  found them) from SHARED words (multiple players found them), which is a
+  real scoring-logic detail, not just a point tally.
+- Settings customization for matches.
+- Real-time game synchronization so all players see the same state live.
+- Persistent storage of accounts and stats.
+
+ARCHITECTURE
+  Frontend:    JavaScript / React
+  Backend:     Java / Spring Boot, REST API, organized with a clean
+               controller -> service -> repository layering
+  Real-time:   WebSockets layer for live multiplayer sync
+  Database:    SQL (relational), for accounts and stats
+  Container:   Docker (Dockerfile in repo)
+  Testing:     128 unit tests
+  CI/CD:       throughout the project
+
+DEPLOYMENT (per resume)
+  - AWS EKS with self-managed nodes
+  - Frontend and backend Deployments behind Kubernetes Services
+  - ConfigMaps and Secrets externalize database configuration
+  - Helm used to install the External Secrets Operator, which syncs
+    credentials from AWS Secrets Manager via an IAM role for
+    KMS-encrypted storage
+  - AWS certificates configured for HTTPS on a custom domain
+
+LANGUAGE BREAKDOWN IN REPO
+  Java ~226k, JavaScript ~75k, CSS ~30k, Dockerfile, HTML.
+
+WHY THIS PROJECT MATTERS
+This is my most complete full-stack project. It has a real layered
+backend architecture, real-time networking (WebSockets), a relational
+database, a substantial test suite, containerization, and (per resume) a
+production-style Kubernetes deployment with proper secrets management.
+When a role asks for "build Java services on Kubernetes with REST APIs and
+a persistence layer," this project is almost a one-to-one match.
+
+INTERVIEW TALKING POINTS
+- The controller-service-repository layering and why it keeps the backend
+  clean and testable.
+- How real-time sync works over WebSockets (game state broadcast).
+- The unique-vs-shared word scoring logic.
+- The deployment story: EKS, External Secrets Operator, Secrets Manager,
+  KMS, HTTPS, this is strong infra material if you can speak to it.
+
+NOTE TO SELF
+Confirm the EKS/Helm/Secrets-Manager deployment artifacts live in the
+repo (manifests, Helm charts, or docs). The application README focuses on
+gameplay; if an interviewer wants to see the deployment, know exactly
+which files to point to.
+
+
+################################################################
+3. Diego's Portfolio Platform (in progress, NOT yet on resume)
+   Language: TypeScript | repo: portfolio
+################################################################
+
+WHAT IT IS
+Deliberately not a normal portfolio site. It is a small DISTRIBUTED SYSTEM
+that doubles as a live demonstration of the very skills it lists:
+TypeScript, Java/Spring Boot, Python, PostgreSQL, Docker, Kubernetes, AWS,
+and applied AI/LLM work. In other words, the portfolio is itself the
+proof of the resume.
+
+FEATURES (planned + in progress)
+- Project showcase: each project with description, tech stack, links, and
+  a write-up.
+- "Ask Me Anything" AI bot: a RAG chatbot grounded on my resume and
+  projects so visitors can ask questions and get sourced answers.
+    * Works with zero setup via a free/cheap default model.
+    * Technical users can Bring-Your-Own-Key to use their own model.
+    * Retrieval is always handled server-side using embeddings with
+      pgvector (Postgres vector extension).
+    * Reuses the BluHorizon RAG pipeline, so it connects my projects
+      together.
+- AI mini-games: play against an LLM opponent.
+    * Phase 1: tic-tac-toe and Connect-4.
+    * Stretch goal: chess.
+- Accounts & feedback: guest play with anonymous score tracking, optional
+  login for persistent stats, and a feedback form on the site itself.
+
+ENGINEERING APPROACH
+The repo is organized around real planning documents, read in order:
+  1. Architecture
+  2. Tech stack
+  3. Repo skeleton
+  4. Sprint plan
+This reflects how I approach a larger build: design and document first,
+then implement in sprints, rather than diving straight into code.
+
+WHY THIS PROJECT MATTERS
+- It is where a lot of my current TypeScript work lives (real, not
+  hypothetical).
+- It ties backend, infrastructure (Docker/Kubernetes/AWS), database
+  (Postgres + pgvector), and applied AI (RAG, LLM opponents) into ONE
+  coherent system.
+- It demonstrates that I learn by building something real and ambitious,
+  not by following tutorials.
+
+INTERVIEW TALKING POINTS
+- The "portfolio as a distributed system" concept.
+- Reusing the BluHorizon RAG pipeline with pgvector for the AMA bot.
+- The Bring-Your-Own-Key design decision (lets technical visitors use
+  their own model while keeping retrieval server-side).
+- Designing with architecture/sprint docs before coding.
+
+RECOMMENDATION
+Add this to your resume. It shows TypeScript, distributed-systems
+thinking, Postgres/pgvector, and applied AI in a single flagship project,
+and it directly addresses your TypeScript and full-stack story.
+
+
+################################################################
+4. QOI Image Codec - CPU & GPU Acceleration Study (Capstone)
+   Language: C++ | repo: ece455-qoi
+################################################################
+
+WHAT IT IS
+A performance-focused implementation and benchmarking study of the QOI
+(Quite OK Image) lossless image format, built as my ECE capstone. I
+implemented the codec in multiple variants and benchmarked encode/decode
+throughput across all of them on HPC hardware.
+
+THE FOUR (FIVE) VARIANTS
+  reference/    -> baseline, no parallelism
+  single-cpu/   -> single-threaded CPU
+  multi-cpu/    -> multi-threaded CPU using OpenMP
+  gpu-cuda/     -> CUDA GPU kernels
+  gpu-segment/  -> segmented CUDA approach
+Having a clean baseline plus progressively parallelized versions is what
+makes the benchmarking meaningful, you can attribute speedups to specific
+techniques.
+
+RESULTS
+  - 10x encoding speedup with OpenMP (multi-core CPU)
+  - 5.9 GB/s GPU decode throughput vs. 4.2 GB/s on CPU
+
+HOW QOI WORKS (and why parallelizing is hard)
+QOI encodes losslessly using a small operation set:
+  OP_INDEX -> reference a pixel from a 64-entry running hash table
+  OP_DIFF  -> small per-channel RGB delta from the previous pixel
+  (plus run-length and full-color ops)
+The catch: the running hash table and the "previous pixel" both create
+data dependencies between consecutive pixels. Naive parallelism breaks
+correctness because each pixel's encoding depends on prior state. The
+interesting engineering is restructuring the work (e.g. segmenting) so it
+can be parallelized while still producing correct, lossless output.
+
+TECHNICAL STACK
+  Language:     C++20
+  GPU:          CUDA (NVIDIA)
+  CPU parallel: OpenMP
+  Libraries:    libpng, STB image
+  Build:        GNU Make (with CUDA support)
+  HPC:          SLURM job scheduler for benchmarking runs
+
+LANGUAGE BREAKDOWN IN REPO
+  C++ ~92k, CUDA ~26k, Shell, Makefile.
+
+WHY THIS PROJECT MATTERS
+This is my strongest systems-and-performance project: real GPU
+programming, real CPU parallelism, careful reasoning about data
+dependencies, and measured results on cluster hardware. For any
+systems/performance/infra role, this is the project to lead with, and it
+also pairs with the NVIDIA CUDA certificate from GTC.
+
+INTERVIEW TALKING POINTS
+- Why the hash table + previous-pixel state make naive parallelism
+  incorrect, and how segmentation addresses it.
+- The difference between the OpenMP and CUDA approaches.
+- How you benchmarked fairly (baseline -> variants) on SLURM.
+
+
+################################################################
+5. RISC-V Superscalar Pipelined Processor
+   Language: Verilog/SystemVerilog | repo: processor_RISCV_321
+################################################################
+
+WHAT IT IS
+A superscalar RISC-V pipelined processor implemented in hardware
+description language. This is digital design at the register-transfer
+level: I defined the actual logic of a CPU, not software running on one.
+
+WHAT I BUILT (per resume + repo composition)
+  - All five classic pipeline stages (fetch, decode, execute, memory,
+    writeback)
+  - Data forwarding to resolve pipeline hazards (so dependent
+    instructions do not stall unnecessarily)
+  - Multi-issue SUPERSCALAR execution: issuing more than one instruction
+    per cycle, which is substantially more complex than a single-issue
+    pipeline (you must handle structural and data hazards across parallel
+    issue slots)
+  - A cache system for both instruction and data memory
+
+The repo also contains a large amount of Assembly (~52k), which are the
+test programs exercising the processor, and Makefile-driven simulation.
+
+LANGUAGE BREAKDOWN IN REPO
+  Verilog ~198k, Assembly ~52k, SystemVerilog ~14k, Makefile.
+
+WHY THIS PROJECT MATTERS
+Superscalar execution is genuinely advanced for a student processor, most
+course processors are single-issue. Building multi-issue with forwarding
+and caches shows real depth in computer architecture and digital design.
+Together with the Segway ASIC, this is the foundation of my Computer
+Engineering identity: the lowest level of the stack, where you design the
+hardware itself.
+
+INTERVIEW TALKING POINTS
+- Why superscalar issue is hard (hazards across parallel issue slots).
+- How data forwarding avoids stalls.
+- The instruction/data cache design.
+- Writing Assembly test programs to validate the pipeline.
+
+
+################################################################
+6. Self-Balancing Segway ASIC
+   Language: SystemVerilog | repo: Segway
+################################################################
+
+WHAT IT IS
+A complete RTL-to-gates self-balancing Segway controller, designed in
+SystemVerilog for a digital system design and synthesis course. It is a
+full real-time control SYSTEM realized in hardware, taken all the way from
+RTL through synthesis to a gate-level netlist.
+
+SUBSYSTEMS (per resume)
+  - PID pitch balance control (the core control loop that keeps it
+    upright)
+  - Differential PWM motor drive (drives the two motors, including
+    steering via differential output)
+  - A2D (analog-to-digital) interface
+  - SPI interface to an inertial sensor / IMU (reads pitch/motion)
+  - UART command receiver (accepts external commands)
+  - A steering-enable finite state machine
+
+SYNTHESIS & VERIFICATION
+  - Synthesized to a gate-level netlist targeting a 333 MHz clock
+  - Tool: Synopsys Design Compiler
+  - Standard-cell library: SAED32 (32nm)
+  - Verified with 10+ ModelSim testbenches covering balance response,
+    steering, and an overcurrent safety cutoff
+The repo also includes Python (~5k), likely modeling/stimulus or analysis
+scripts supporting verification.
+
+LANGUAGE BREAKDOWN IN REPO
+  SystemVerilog ~201k, Python ~5k.
+
+WHY THIS PROJECT MATTERS
+This is real-time control implemented in hardware, including the sensor
+interfaces (SPI IMU, A2D), the control loop (PID), the actuation
+(differential PWM), and safety logic (overcurrent cutoff), then pushed
+through actual synthesis to gates at a real clock target. The PID + IMU +
+real-time-control aspects are directly relevant to robotics and embedded
+systems. It proves you can go from a control problem all the way to
+silicon-ready logic.
+
+INTERVIEW TALKING POINTS
+- The PID balance loop and reading the IMU over SPI.
+- Differential PWM for combined drive + steering.
+- The overcurrent safety FSM.
+- Taking it through Synopsys DC synthesis at 333 MHz on SAED32, and what
+  hitting a timing target means.
+
+
+################################################################
+7. BrickedUp - LEGO Collector Android App
+   Language: Kotlin | repo: ece407-brickedup
+################################################################
+
+WHAT IT IS
+A native Android app for LEGO collectors to manage their collection,
+maintain want lists, and buy or sell sets, integrated with real
+marketplace and catalog APIs for live data.
+
+FEATURES
+  - My Sets: track owned sets with catalog details
+  - Want List: wishlist sets and monitor market prices
+  - Buy / Sell: browse and post listings from marketplace data
+  - QR code scanning: identify sets by scanning their codes (camera)
+  - Location services: GPS discovery of nearby collectors
+  - Price tracking: automated periodic price updates
+
+THE INTERESTING ENGINEERING: THREE REAL APIs, THREE PROTOCOLS
+  - BrickLink (marketplace + price guide) over OAuth1
+  - Brickset (set catalog) over SOAP
+  - Geoapify (location) over a REST API
+Integrating three external services that each speak a different protocol
+(OAuth1 vs SOAP vs REST) into one coherent app is the real challenge here,
+plus wiring in device capabilities (camera for QR, GPS for location).
+
+TECHNICAL STACK
+  Mobile:     Kotlin, Jetpack Compose
+  Backend:    Firebase (Firestore, Auth)
+  External:   BrickLink (OAuth1), Brickset (SOAP), Geoapify (REST)
+  Local DB:   SQLite (lego_sets.db)
+  Build:      Gradle (Kotlin DSL), Android SDK 36
+  Utilities:  Python scripts for data management
+
+LANGUAGE BREAKDOWN IN REPO
+  Kotlin ~272k, Python ~33k.
+
+WHY THIS PROJECT MATTERS
+It shows mobile development plus real-world API integration across
+mismatched protocols, plus device features. It is a good demonstration of
+making messy, heterogeneous external systems work together cleanly.
+
+INTERVIEW TALKING POINTS
+- Handling three auth/transport styles (OAuth1, SOAP, REST) in one app.
+- Camera-based QR scanning and GPS location features.
+- Firebase for auth + real-time persistence, SQLite for local catalog.
+
+NOTE TO SELF
+The repo uses Jetpack Compose; the resume says "MVVM architecture." These
+are compatible (MVVM is a pattern; Compose is the UI toolkit), but align
+the wording so the description matches the code.
+
+
+################################################################
+8. Calorie Cart - Calorie-Aware Grocery Shopping App
+   Language: JavaScript | repo: calorie-tracker-website
+################################################################
+
+WHAT IT IS
+A React web app that combines online grocery shopping with calorie
+tracking. Users browse a food catalog, add items to a cart, and see a
+running calorie total alongside the order, keeping them accountable to
+dietary goals at checkout.
+
+FEATURES & STRUCTURE (from README)
+  - Home: hero carousel + deals section with discounted items
+  - Store: browse the full food catalog with per-item calorie info
+  - Cart & Checkout: running calorie total alongside prices
+  - Account: user profile page
+  - Auth: login and registration with session management
+  src/
+    components/
+      structural/
+        CalorieCartApp.jsx        <- root app shell
+        calorieCartAppLayout.jsx
+      websitePages/
+        homePage.jsx
+        storePage.jsx
+        checkoutPage.jsx
+        ... (account, auth pages)
+
+TECHNICAL STACK
+  Frontend: React 18, Vite
+  UI:       React Bootstrap
+  State:    React hooks (cart quantity, session)
+  Auth:     login/register with session management
+
+WHY THIS PROJECT MATTERS / CURRENT WORK
+This is the project I am actively converting to TypeScript as I move my
+TypeScript skills from beginner toward intermediate. It is a clean,
+self-contained React app, which makes it a good, low-risk vehicle for the
+conversion. It is honest evidence of the TypeScript work in progress.
+
+INTERVIEW TALKING POINTS
+- Component organization (structural shell vs page components).
+- The running-calorie-total state logic across cart/checkout.
+- Your TypeScript migration: what you have converted, what you learned
+  about types/interfaces in the process.
+
+
+################################################################
+9. AI-LAB
+   Language: Python | repo: AI-LAB
+################################################################
+
+WHAT IT IS
+A Python repository where I experiment with AI and machine learning.
+
+HONEST NOTE
+I was not able to retrieve this repo's README at the time of writing
+(GitHub rate limiting), so I am keeping this description conservative and
+accurate: it is a Python-based AI/ML practice and experimentation
+repository. Before using it in any application or interview, fill in the
+specifics, what models, datasets, techniques, or experiments it actually
+contains, so the description matches the code exactly. Do not describe it
+beyond what is genuinely in the repo.
+
+SUGGESTED THINGS TO DOCUMENT (once you confirm them)
+  - What ML/AI techniques or models you implemented or explored
+  - Any datasets used
+  - Libraries (PyTorch? scikit-learn? others?)
+  - What you learned or were testing
+
+
+################################################################
+SUMMARY BY DOMAIN (for matching to roles)
+################################################################
+  Applied AI / RAG / LLMs ... BluHorizon, AI-LAB, Portfolio AMA bot
+  Backend / full-stack ....... Boggle, Portfolio, Calorie Cart
+  Systems / performance ...... QOI codec (C++/CUDA/OpenMP)
+  Digital hardware design .... RISC-V processor, Segway ASIC
+  Mobile ..................... BrickedUp (Kotlin/Compose)
+
+Languages demonstrated across repos: Python, Java, C++, CUDA,
+SystemVerilog/Verilog, Kotlin, JavaScript, TypeScript, Assembly, Dart.
+
+Which project to lead with, by role type:
+  AI / ML / data ............. BluHorizon, then Portfolio (RAG + pgvector)
+  Backend .................... Boggle (Spring Boot/K8s), then Portfolio
+  Systems / performance ...... QOI codec
+  Embedded / hardware ........ Segway (real-time control), RISC-V (arch)
+  Full-stack ................. Boggle + Portfolio
+  Mobile ..................... BrickedUp

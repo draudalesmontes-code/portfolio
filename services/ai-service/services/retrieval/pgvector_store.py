@@ -5,21 +5,28 @@ from pgvector.psycopg2 import register_vector
 from config import settings
 
 
-_pool = pg_pool.ThreadedConnectionPool(
-    minconn=1,
-    maxconn=10,
-    dsn=settings.database_url,
-)
+_pool: pg_pool.ThreadedConnectionPool | None = None
+
+
+def _get_pool() -> pg_pool.ThreadedConnectionPool:
+    global _pool
+    if _pool is None:
+        _pool = pg_pool.ThreadedConnectionPool(
+            minconn=1,
+            maxconn=10,
+            dsn=settings.database_url,
+        )
+    return _pool
 
 
 def _get_conn():
-    conn = _pool.getconn()
+    conn = _get_pool().getconn()
     register_vector(conn)
     return conn
 
 
 def _release_conn(conn):
-    _pool.putconn(conn)
+    _get_pool().putconn(conn)
 
 
 def store_document(title: str, source: str, chunks: list[str], embeddings: list[list[float]]) -> int:
@@ -47,15 +54,25 @@ def store_document(title: str, source: str, chunks: list[str], embeddings: list[
         _release_conn(conn)
 
 
+def has_content() -> bool:
+    conn = _get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT EXISTS (SELECT 1 FROM document_chunks LIMIT 1)")
+            return cur.fetchone()[0]
+    finally:
+        _release_conn(conn)
+
+
 def similarity_search(query_embedding: list[float], k: int = 5) -> list[dict]:
     conn = _get_conn()
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             cur.execute(
-                """SELECT dc.chunk_text, d.source, dc.embedding <=> %s AS distance
+                """SELECT dc.chunk_text, d.source, dc.embedding <=> %s::vector AS distance
                    FROM document_chunks dc
                    JOIN documents d ON d.id = dc.document_id
-                   ORDER BY dc.embedding <=> %s
+                   ORDER BY dc.embedding <=> %s::vector
                    LIMIT %s""",
                 (query_embedding, query_embedding, k),
             )

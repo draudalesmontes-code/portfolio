@@ -4,5 +4,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env")
 
     database_url: str = "postgresql://folioAdmin:password@db:5432/portfolio"
+    groq_api_key: str = ""
+    redis_url: str = "redis://redis:6379"
+
 
 settings = Settings()

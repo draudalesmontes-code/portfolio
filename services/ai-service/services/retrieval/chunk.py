@@ -1,7 +1,7 @@
-from sentence_transformers import SentenceTransformer 
+from transformers import AutoTokenizer
 
-_model = SentenceTransformer("all-MiniLM-L6-v2")
-_tokenizer = _model.tokenizer
+_tokenizer = AutoTokenizer.from_pretrained("sentence-transformers/all-MiniLM-L6-v2")
+
 
 
 class Chunks:

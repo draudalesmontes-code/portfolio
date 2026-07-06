@@ -3,5 +3,13 @@ uvicorn[standard]
 pydantic-settings
 psycopg2-binary
 pgvector
-sentence-transformers
+fastembed
 redis
+anthropic
+openai
+groq
+slowapi
+python-multipart
+pytest
+pytest-asyncio
+httpx
