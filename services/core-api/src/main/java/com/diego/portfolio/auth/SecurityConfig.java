@@ -47,7 +47,11 @@ public class SecurityConfig {
                 .ignoringRequestMatchers(
                     "/auth/register",
                     "/auth/login",
-                    "/auth/resend-verification"
+                    "/auth/resend-verification",
+                    "/games/connect4/sessions",
+                    "/games/connect4/sessions/*/moves",
+                    "/games/tictactoe/sessions",
+                    "/games/tictactoe/sessions/*/moves"
                 )
                 .csrfTokenRepository(csrfTokenRepository)
                 .csrfTokenRequestHandler(

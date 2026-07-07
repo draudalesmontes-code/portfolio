@@ -38,6 +38,29 @@ class GameBackendRegressionTest {
     private EmailService emailService;
 
     @Test
+    void guestCanStartGamesWithoutCsrfToken() throws Exception {
+        mockMvc.perform(post("/games/connect4/sessions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                      "difficulty": "EASY",
+                      "humanPiece": "RED"
+                    }
+                    """))
+            .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/games/tictactoe/sessions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                      "difficulty": "EASY",
+                      "humanSymbol": "X"
+                    }
+                    """))
+            .andExpect(status().isCreated());
+    }
+
+    @Test
     void guestCanStartAndPlayConnectFour() throws Exception {
         MvcResult startResult = mockMvc.perform(
                 post("/games/connect4/sessions").with(csrf())
