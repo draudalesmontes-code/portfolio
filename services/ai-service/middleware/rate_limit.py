@@ -4,6 +4,8 @@ from slowapi.errors import RateLimitExceeded
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
+from config import settings
+
 limiter = Limiter(key_func=get_remote_address)
 
 GUEST_LIMIT = "10/minute"
@@ -11,7 +13,7 @@ GUEST_LIMIT = "10/minute"
 
 def is_byok_request(request: Request) -> bool:
     """Return True when the caller supplies their own API key (exempt from rate limiting)."""
-    return bool(request.headers.get("X-Api-Key"))
+    return settings.byok_enabled and bool(request.headers.get("X-Api-Key"))
 
 
 async def rate_limit_handler(request: Request, exc: RateLimitExceeded) -> JSONResponse:

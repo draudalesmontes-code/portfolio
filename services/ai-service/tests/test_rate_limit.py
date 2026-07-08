@@ -1,7 +1,6 @@
 import json
 import pytest
-from unittest.mock import MagicMock, AsyncMock
-from fastapi import Request
+from unittest.mock import MagicMock, patch
 from fastapi.testclient import TestClient
 from middleware.rate_limit import is_byok_request, rate_limit_handler, GUEST_LIMIT
 from slowapi.errors import RateLimitExceeded
@@ -22,10 +21,18 @@ def test_is_byok_returns_false_without_api_key():
     assert is_byok_request(request) is False
 
 
-# Test that a request with X-Api-Key header IS byok
-def test_is_byok_returns_true_with_api_key():
+# Test that a request with X-Api-Key header is NOT byok when BYOK is disabled
+def test_is_byok_returns_false_with_api_key_when_disabled():
     request = _mock_request(api_key="sk-test-key")
-    assert is_byok_request(request) is True
+    with patch("middleware.rate_limit.settings.byok_enabled", False):
+        assert is_byok_request(request) is False
+
+
+# Test that a request with X-Api-Key header IS byok when BYOK is enabled
+def test_is_byok_returns_true_with_api_key_when_enabled():
+    request = _mock_request(api_key="sk-test-key")
+    with patch("middleware.rate_limit.settings.byok_enabled", True):
+        assert is_byok_request(request) is True
 
 
 # Test that an empty X-Api-Key header is falsy (still treated as guest)

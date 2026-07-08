@@ -5,6 +5,7 @@ from fastapi import Depends, APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
+from config import settings
 from dependencies import get_current_user
 from middleware.rate_limit import limiter, GUEST_LIMIT, is_byok_request
 from services.generation.factory import get_generator
@@ -34,6 +35,13 @@ class ChatResponse(BaseModel):
 @limiter.limit(GUEST_LIMIT, exempt_when=is_byok_request)
 async def chat(request: Request, body: ChatRequest, user_id: Optional[int] = Depends(get_current_user)):
     try:
+        api_key = body.api_key.strip() if body.api_key else None
+        provider = body.provider
+
+        if not settings.byok_enabled:
+            api_key = None
+            provider = "groq"
+
         history = get_history(body.session_id)
         query_vector = _embedder.embed(body.message)
         chunks = similarity_search(query_vector, k=5)
@@ -53,7 +61,7 @@ CONTEXT:
             *history,
             {"role": "user", "content": body.message},
         ]
-        generator = get_generator(body.provider, body.api_key)
+        generator = get_generator(provider, api_key)
         session = body.session_id or generate_session_id()
 
         async def generate_and_save():
@@ -72,5 +80,7 @@ CONTEXT:
             headers={"X-Session-Id": session, "X-Citations": json.dumps(chunks)},
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Chat failed: {str(e)}")

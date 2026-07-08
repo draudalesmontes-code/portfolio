@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     database_url: str = "postgresql://folioAdmin:password@db:5432/portfolio"
     groq_api_key: str = ""
     redis_url: str = "redis://redis:6379"
+    byok_enabled: bool = False
 
 
 settings = Settings()

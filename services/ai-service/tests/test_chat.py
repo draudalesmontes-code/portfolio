@@ -65,6 +65,7 @@ def test_chat_uses_byok_when_api_key_provided():
          patch("routers.chat._embedder") as mock_embedder, \
          patch("routers.chat.similarity_search", return_value=[]), \
          patch("routers.chat.get_generator") as mock_factory, \
+         patch("routers.chat.settings.byok_enabled", True), \
          patch("routers.chat.save_history"):
         mock_embedder.embed.return_value = [0.1] * 384
         mock_gen = MagicMock()
@@ -77,6 +78,26 @@ def test_chat_uses_byok_when_api_key_provided():
             "api_key": "sk-test-key"
         })
         mock_factory.assert_called_once_with("claude", "sk-test-key")
+
+
+def test_chat_ignores_byok_when_disabled():
+    with patch("routers.chat.get_history", return_value=[]), \
+         patch("routers.chat._embedder") as mock_embedder, \
+         patch("routers.chat.similarity_search", return_value=[]), \
+         patch("routers.chat.get_generator") as mock_factory, \
+         patch("routers.chat.settings.byok_enabled", False), \
+         patch("routers.chat.save_history"):
+        mock_embedder.embed.return_value = [0.1] * 384
+        mock_gen = MagicMock()
+        mock_gen.stream.return_value = iter(["Answer"])
+        mock_factory.return_value = mock_gen
+
+        client.post("/ai/chat", json={
+            "message": "Hi",
+            "provider": "claude",
+            "api_key": "sk-test-key"
+        })
+        mock_factory.assert_called_once_with("groq", None)
 
 
 # Test that similarity_search results are forwarded as X-Citations header

@@ -17,6 +17,8 @@ const PROVIDERS = [
     { value: "claude", label: "Claude",           model: "Claude Opus 4" },
 ]
 
+const BYOK_ENABLED = process.env.NEXT_PUBLIC_AI_BYOK_ENABLED === "true";
+
 export default function ChatWidget({ onClose }: ChatWidgetProps) {
     const [messages, setMessages]      = useState<Message[]>([])
     const [input, setInput]            = useState<string>("")
@@ -41,14 +43,24 @@ export default function ChatWidget({ onClose }: ChatWidgetProps) {
         setMessages(prev => [...prev, { role: "assistant", content: "" }])
 
         try {
+            const trimmedApiKey = apiKey.trim();
+            const shouldUseByok = BYOK_ENABLED && showByok && trimmedApiKey.length > 0;
+            const headers: Record<string, string> = {
+                "Content-Type": "application/json",
+            };
+
+            if (shouldUseByok) {
+                headers["X-Api-Key"] = trimmedApiKey;
+            }
+
             const res = await fetch("/ai/chat", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers,
                 body: JSON.stringify({
                     message,
                     session_id: sessionId ?? undefined,
-                    provider,
-                    api_key: apiKey || undefined,
+                    provider: shouldUseByok ? provider : "groq",
+                    api_key: shouldUseByok ? trimmedApiKey : undefined,
                 }),
             })
 
@@ -105,20 +117,22 @@ export default function ChatWidget({ onClose }: ChatWidgetProps) {
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => setShowByok(p => !p)}
-                        className={`transition-colors ${showByok ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-                        title="Use your own API key"
-                    >
-                        <Settings className="h-4 w-4" />
-                    </button>
+                    {BYOK_ENABLED && (
+                        <button
+                            onClick={() => setShowByok(p => !p)}
+                            className={`transition-colors ${showByok ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                            title="Use your own API key"
+                        >
+                            <Settings className="h-4 w-4" />
+                        </button>
+                    )}
                     <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
                         <X className="h-4 w-4" />
                     </button>
                 </div>
             </div>
 
-            {showByok && (
+            {BYOK_ENABLED && showByok && (
                 <div className="border-b px-4 py-3 space-y-2 bg-muted/40">
                     <p className="text-xs text-muted-foreground">
                         Use your own provider key for this request
