@@ -16,9 +16,8 @@ export default function Footer() {
             Email
           </a>
 
-          {/* TODO: replace with your real LinkedIn URL */}
           <a
-            href="https://www.linkedin.com/in/your-handle"
+            href="https://www.linkedin.com/in/diego-raudales-87bb432b3/"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
@@ -27,9 +26,8 @@ export default function Footer() {
             LinkedIn
           </a>
 
-          {/* TODO: replace with your real GitHub URL */}
           <a
-            href="https://github.com/your-handle"
+            href="https://github.com/draudalesmontes-code?tab=repositories"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"

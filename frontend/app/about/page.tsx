@@ -86,18 +86,18 @@ export default function AboutPage() {
             <AboutImage
               src="/aboutPic1.JPG"
               alt="Diego outdoors"
-              className="mt-10 h-52 w-36 -rotate-3 sm:w-40"
+              className="mt-12 h-64 w-44 -rotate-3 sm:h-72 sm:w-52"
             />
             <AboutImage
               src="/aboutPic2.JPG"
               alt="Diego smiling"
-              className="h-72 w-40 sm:w-48"
+              className="h-80 w-48 sm:h-96 sm:w-60"
               priority
             />
             <AboutImage
               src="/engineeringPic.jpg"
               alt="Diego working on an engineering project"
-              className="mt-16 h-56 w-36 rotate-3 sm:w-40"
+              className="mt-20 h-72 w-44 rotate-3 sm:h-80 sm:w-52"
             />
           </div>
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
