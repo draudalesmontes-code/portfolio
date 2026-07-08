@@ -27,7 +27,7 @@ export default function Home() {
           I&apos;m Diego Raudales, a software engineer who builds full-stack systems — from Spring
           Boot and FastAPI services to Next.js front-ends and applied AI. This portfolio is itself a
           live demo of that work: a polyglot, containerized app with an AI assistant and mini-games.
-          Replace this text with your own summary.
+          
         </p>
       </section>
     </div>
