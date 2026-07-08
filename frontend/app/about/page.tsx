@@ -10,6 +10,7 @@ const jobs: Job[] = [
     position: "AWS Bedrock AgentCore Programmer",
     date: "Jun 2025 – Aug 2025",
     location: "Tegucigalpa, Honduras",
+    image: "/espresso-americano.jpg",
     description:
       "Prototyped an AWS Bedrock AgentCore backend, debugging and extending three MCP tools for secure database access while integrating the memory, identity, and gateway modules. Wrote 30 Python unit and integration tests for the MCP tools and automation scripts, and used the Linux CLI with internal version control to streamline deployment and debugging.",
   },
@@ -18,6 +19,7 @@ const jobs: Job[] = [
     position: "Python Programming Instructor",
     date: "Sep 2024 – May 2026",
     location: "Madison, WI",
+    image: "/ITA.jpg",
     description:
       "Taught Python to cohorts of 13+ high school students for 20 hours a week, covering data structures, algorithms, and code review. Introduced test-driven development principles to reinforce software quality and build strong engineering habits early.",
   },
@@ -26,6 +28,7 @@ const jobs: Job[] = [
     position: "IT Intern",
     date: "Jun 2024 – Aug 2024",
     location: "Tegucigalpa, Honduras",
+    image: "/pixelpay.png",
     description:
       "Resolved 30+ client-reported tickets and improved the web product UI in close coordination with internal engineering teams, working within an agile development process to ship fixes and enhancements reliably.",
   },
@@ -34,6 +37,7 @@ const jobs: Job[] = [
     position: "Database Intern",
     date: "Jun 2023 – Aug 2023",
     location: "Bogotá, Colombia",
+    image: "/sis-colombia.png",
     description:
       "Built Python ETL pipelines on AWS to migrate over 1 TB of on-premises database data to the cloud, then delivered analytics dashboards in Athena and QuickSight that gave client data teams clear, queryable insight into their data.",
   },
@@ -42,6 +46,7 @@ const jobs: Job[] = [
     position: "Frontend Web Developer",
     date: "Jun 2022 – Aug 2022",
     location: "Tegucigalpa, Honduras",
+    image: "/aduo.png",
     description:
       "Shipped two client websites in close collaboration with digital designers, translating polished visual designs into responsive, pixel-faithful frontend implementations.",
   },
