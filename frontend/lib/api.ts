@@ -1,24 +1,16 @@
 "use client";
 
-type CsrfResponse = {
-  token: string;
-  headerName: string;
-};
+function readXsrfCookie(): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
 
-let csrfPromise: Promise<CsrfResponse> | null = null;
-
-async function loadCsrfToken(): Promise<CsrfResponse> {
-  csrfPromise ??= fetch("/api/auth/csrf", {
+async function ensureXsrfCookie(): Promise<void> {
+  await fetch("/api/auth/csrf", {
     credentials: "include",
     cache: "no-store",
-  }).then(async (response) => {
-    if (!response.ok) {
-      throw new Error("Unable to initialize request security.");
-    }
-    return response.json() as Promise<CsrfResponse>;
   });
-
-  return csrfPromise;
 }
 
 export async function apiFetch(
@@ -35,31 +27,34 @@ export async function apiFetch(
     });
   }
 
-  const csrf = await loadCsrfToken();
-  const response = await fetchWithCsrf(input, init, csrf);
+  const response = await fetchWithCsrf(input, init);
 
-  if (response.status !== 403) {
+  if (![401, 403].includes(response.status)) {
     return response;
   }
 
-  csrfPromise = null;
-  const freshCsrf = await loadCsrfToken();
-  return fetchWithCsrf(input, init, freshCsrf);
+  await ensureXsrfCookie();
+  return fetchWithCsrf(input, init);
 }
 
 async function fetchWithCsrf(
   input: RequestInfo | URL,
   init: RequestInit,
-  csrf: CsrfResponse,
 ): Promise<Response> {
-  const headers = new Headers(init.headers);
-  headers.set(csrf.headerName, csrf.token);
+  let token = readXsrfCookie();
+  if (!token) {
+    await ensureXsrfCookie();
+    token = readXsrfCookie();
+  }
 
-  const response = await fetch(input, {
+  const headers = new Headers(init.headers);
+  if (token) {
+    headers.set("X-XSRF-TOKEN", token);
+  }
+
+  return fetch(input, {
     ...init,
     headers,
     credentials: init.credentials ?? "include",
   });
-
-  return response;
 }
