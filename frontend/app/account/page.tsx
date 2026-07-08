@@ -87,6 +87,11 @@ export default function AccountPage() {
   const { user, isLoading, logout, refreshAuth } = useAuth();
   const [section, setSection] = useState<Section>("account");
   const [logoutError, setLogoutError] = useState<string | null>(null);
+  const [currentProfileImageUrl, setCurrentProfileImageUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user) setCurrentProfileImageUrl(user.profileImageUrl ?? null);
+  }, [user]);
   const [messages, setMessages] = useState<SentMessage[]>([]);
   const [messagesLoading, setMessagesLoading] = useState(true);
   const [messagesError, setMessagesError] = useState<string | null>(null);
@@ -199,10 +204,10 @@ export default function AccountPage() {
         <aside className="md:w-64 md:shrink-0">
           <Card className="p-5">
             <div className="flex items-center gap-3">
-              {user.profileImageUrl ? (
+              {currentProfileImageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={user.profileImageUrl}
+                  src={currentProfileImageUrl}
                   alt={user.displayName}
                   className="size-12 rounded-full object-cover"
                 />
@@ -258,7 +263,7 @@ export default function AccountPage() {
         {/* ── content ── */}
         <section className="min-w-0 flex-1">
           {section === "account" && (
-            <AccountSection user={user} refreshAuth={refreshAuth} />
+            <AccountSection user={user} refreshAuth={refreshAuth} onImageSaved={setCurrentProfileImageUrl} />
           )}
           {section === "messages" && (
             <MessagesSection
@@ -270,7 +275,7 @@ export default function AccountPage() {
           {section === "stats" && (
             <StatsSection
               displayName={user.displayName}
-              profileImageUrl={user.profileImageUrl ?? null}
+              profileImageUrl={currentProfileImageUrl}
               createdAt={user.createdAt}
               stats={stats}
               isLoading={statsLoading}
@@ -300,9 +305,11 @@ async function readApiError(response: Response, fallback: string) {
 function AccountSection({
   user,
   refreshAuth,
+  onImageSaved,
 }: {
   user: AuthUser;
   refreshAuth: () => Promise<AuthUser | null>;
+  onImageSaved: (url: string | null) => void;
 }) {
   const [email, setEmail] = useState(user.email);
   const [savedProfileImageUrl, setSavedProfileImageUrl] = useState(
@@ -402,6 +409,7 @@ function AccountSection({
       const updatedUser = (await response.json()) as AuthUser;
       const updatedProfileImageUrl = updatedUser.profileImageUrl ?? "";
       setSavedProfileImageUrl(updatedProfileImageUrl);
+      onImageSaved(updatedProfileImageUrl || null);
       setSelectedImageFile(null);
       await refreshAuth();
       setImageStatus(
