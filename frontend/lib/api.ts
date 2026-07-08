@@ -6,11 +6,19 @@ function readXsrfCookie(): string | null {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
-async function ensureXsrfCookie(): Promise<void> {
-  await fetch("/api/auth/csrf", {
-    credentials: "include",
-    cache: "no-store",
-  });
+async function fetchCsrfToken(): Promise<string | null> {
+  try {
+    const res = await fetch("/api/auth/csrf", {
+      credentials: "include",
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { token?: string };
+    // Prefer body (works even with HttpOnly cookie), fall back to cookie
+    return data.token ?? readXsrfCookie();
+  } catch {
+    return readXsrfCookie();
+  }
 }
 
 export async function apiFetch(
@@ -33,18 +41,18 @@ export async function apiFetch(
     return response;
   }
 
-  await ensureXsrfCookie();
-  return fetchWithCsrf(input, init);
+  // Retry once with a freshly fetched token
+  return fetchWithCsrf(input, init, true);
 }
 
 async function fetchWithCsrf(
   input: RequestInfo | URL,
   init: RequestInit,
+  forceFresh = false,
 ): Promise<Response> {
-  let token = readXsrfCookie();
+  let token = forceFresh ? null : readXsrfCookie();
   if (!token) {
-    await ensureXsrfCookie();
-    token = readXsrfCookie();
+    token = await fetchCsrfToken();
   }
 
   const headers = new Headers(init.headers);

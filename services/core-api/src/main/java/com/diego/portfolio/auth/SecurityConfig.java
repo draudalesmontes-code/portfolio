@@ -29,9 +29,9 @@ public class SecurityConfig {
     public CookieCsrfTokenRepository csrfTokenRepository(
         @Value("${app.auth.cookie-secure:false}") boolean secureCookie
     ) {
-        CookieCsrfTokenRepository repository =
-            CookieCsrfTokenRepository.withHttpOnlyFalse();
+        CookieCsrfTokenRepository repository = new CookieCsrfTokenRepository();
         repository.setCookieCustomizer(cookie -> cookie
+            .httpOnly(false)
             .path("/")
             .sameSite("Strict")
             .secure(secureCookie));
