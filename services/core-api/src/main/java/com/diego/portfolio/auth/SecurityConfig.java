@@ -48,6 +48,7 @@ public class SecurityConfig {
                     "/auth/register",
                     "/auth/login",
                     "/auth/resend-verification",
+                    "/feedback",
                     "/games/connect4/sessions",
                     "/games/connect4/sessions/*/moves",
                     "/games/tictactoe/sessions",

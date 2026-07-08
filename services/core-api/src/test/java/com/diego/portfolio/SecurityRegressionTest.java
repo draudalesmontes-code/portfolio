@@ -44,19 +44,19 @@ class SecurityRegressionTest {
     }
 
     @Test
-    void stateChangingRequest_withoutCsrfToken_isRejected() throws Exception {
+    void publicFeedbackEndpoint_doesNotRequireCsrfToken() throws Exception {
         mockMvc.perform(post("/feedback")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {
-                      "authorName": "Attacker",
-                      "contactEmail": "attacker@example.com",
-                      "message": "Cross-site submission"
+                      "authorName": "Guest",
+                      "contactEmail": "guest@example.com",
+                      "message": "Public contact submission"
                     }
                     """))
-            .andExpect(status().isForbidden());
+            .andExpect(status().isCreated());
 
-        assertThat(feedbackRepository.count()).isZero();
+        assertThat(feedbackRepository.count()).isOne();
     }
 
     @Test
