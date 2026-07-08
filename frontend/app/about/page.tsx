@@ -1,4 +1,4 @@
-import { ImageIcon } from "lucide-react";
+import Image from "next/image";
 import EducationCard from "@/components/educationCard";
 import InternCard, { type Job } from "@/components/internCard";
 import SkillGroup from "@/components/skillGroup";
@@ -78,9 +78,22 @@ export default function AboutPage() {
         {/* Hero: three staggered image cards with the title card on top */}
         <section className="relative mb-20">
           <div className="flex items-start justify-center gap-4 sm:gap-6">
-            <ImagePlaceholder className="mt-10 h-52 w-36 -rotate-3 sm:w-40" />
-            <ImagePlaceholder className="h-72 w-40 sm:w-48" />
-            <ImagePlaceholder className="mt-16 h-56 w-36 rotate-3 sm:w-40" />
+            <AboutImage
+              src="/aboutPic1.JPG"
+              alt="Diego outdoors"
+              className="mt-10 h-52 w-36 -rotate-3 sm:w-40"
+            />
+            <AboutImage
+              src="/aboutPic2.JPG"
+              alt="Diego smiling"
+              className="h-72 w-40 sm:w-48"
+              priority
+            />
+            <AboutImage
+              src="/engineeringPic.jpg"
+              alt="Diego working on an engineering project"
+              className="mt-16 h-56 w-36 rotate-3 sm:w-40"
+            />
           </div>
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <div className="rounded-2xl border border-[#ddd4c4] bg-[#fdfcf8]/95 px-10 py-6 shadow-[0_12px_36px_rgba(80,60,30,0.18)] backdrop-blur-sm">
@@ -122,13 +135,29 @@ export default function AboutPage() {
   );
 }
 
-// Placeholder for an image the user will add later.
-function ImagePlaceholder({ className }: { className?: string }) {
+function AboutImage({
+  alt,
+  className,
+  priority = false,
+  src,
+}: {
+  alt: string;
+  className?: string;
+  priority?: boolean;
+  src: string;
+}) {
   return (
     <div
-      className={`flex items-center justify-center rounded-2xl border border-[#ddd4c4] bg-[#fbf8f1] shadow-[0_8px_24px_rgba(80,60,30,0.10)] ${className ?? ""}`}
+      className={`relative overflow-hidden rounded-2xl border border-[#ddd4c4] bg-[#fbf8f1] shadow-[0_8px_24px_rgba(80,60,30,0.10)] ${className ?? ""}`}
     >
-      <ImageIcon className="size-8 text-[#bdb39d]" />
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        priority={priority}
+        sizes="(max-width: 640px) 9rem, 12rem"
+        className="object-cover"
+      />
     </div>
   );
 }
