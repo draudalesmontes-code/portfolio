@@ -199,9 +199,18 @@ export default function AccountPage() {
         <aside className="md:w-64 md:shrink-0">
           <Card className="p-5">
             <div className="flex items-center gap-3">
-              <div className="flex size-12 items-center justify-center rounded-full bg-gradient-to-br from-[#7b2e3c] to-[#9a3a4a] text-[#fdf6f1]">
-                <User className="size-6" />
-              </div>
+              {user.profileImageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={user.profileImageUrl}
+                  alt={user.displayName}
+                  className="size-12 rounded-full object-cover"
+                />
+              ) : (
+                <div className="flex size-12 items-center justify-center rounded-full bg-gradient-to-br from-[#7b2e3c] to-[#9a3a4a] text-[#fdf6f1]">
+                  <User className="size-6" />
+                </div>
+              )}
               <div className="min-w-0">
                 <p className="truncate font-bold leading-tight text-[#3a2228]">
                   {user.displayName}
@@ -261,6 +270,7 @@ export default function AccountPage() {
           {section === "stats" && (
             <StatsSection
               displayName={user.displayName}
+              profileImageUrl={user.profileImageUrl ?? null}
               createdAt={user.createdAt}
               stats={stats}
               isLoading={statsLoading}
@@ -669,12 +679,14 @@ function MessagesSection({
 // ── Stats ────────────────────────────────────────────────────────────────────
 function StatsSection({
   displayName,
+  profileImageUrl,
   createdAt,
   stats,
   isLoading,
   error,
 }: {
   displayName: string;
+  profileImageUrl: string | null;
   createdAt: string;
   stats: GameStats | null;
   isLoading: boolean;
@@ -698,9 +710,18 @@ function StatsSection({
     <Panel title="Stats">
       {/* identity header */}
       <div className="mb-7 flex items-center gap-4">
-        <div className="flex size-16 items-center justify-center rounded-full bg-gradient-to-br from-[#7b2e3c] to-[#9a3a4a] text-[#fdf6f1] shadow-[0_10px_24px_-10px_rgba(123,46,60,0.7)]">
-          <User className="size-8" />
-        </div>
+        {profileImageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={profileImageUrl}
+            alt={displayName}
+            className="size-16 rounded-full object-cover shadow-[0_10px_24px_-10px_rgba(123,46,60,0.7)]"
+          />
+        ) : (
+          <div className="flex size-16 items-center justify-center rounded-full bg-gradient-to-br from-[#7b2e3c] to-[#9a3a4a] text-[#fdf6f1] shadow-[0_10px_24px_-10px_rgba(123,46,60,0.7)]">
+            <User className="size-8" />
+          </div>
+        )}
         <div>
           <h3 className="text-2xl font-bold text-[#3a2228]">{displayName}</h3>
           <p className="text-sm text-[#9a7d78]">

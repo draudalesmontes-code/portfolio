@@ -38,7 +38,7 @@ export async function apiFetch(
   const csrf = await loadCsrfToken();
   const response = await fetchWithCsrf(input, init, csrf);
 
-  if (![401, 403].includes(response.status)) {
+  if (response.status !== 403) {
     return response;
   }
 
@@ -60,10 +60,6 @@ async function fetchWithCsrf(
     headers,
     credentials: init.credentials ?? "include",
   });
-
-  if ([401, 403].includes(response.status)) {
-    csrfPromise = null;
-  }
 
   return response;
 }
