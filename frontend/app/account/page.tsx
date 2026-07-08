@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, type ReactNode, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   BarChart3,
@@ -55,8 +55,9 @@ const NAV = [
 ] as const;
 type Section = (typeof NAV)[number]["id"];
 
-// ── shared bits ──────────────────────────────────────────────────────────────
-function Panel({ title, children }: { title: string; children: React.ReactNode }) {
+// Small layout components keep the account tabs visually consistent without
+// repeating the same card/header markup in every section.
+function Panel({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div>
       <div className="mb-6 flex items-center gap-2.5">
@@ -68,7 +69,13 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
   );
 }
 
-function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function Card({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   return (
     <div
       className={`rounded-3xl border border-[#e7d3ca] bg-[#fdf6f1] shadow-[0_12px_30px_-14px_rgba(110,40,55,0.35)] ${className}`}
@@ -80,18 +87,17 @@ function Card({ children, className = "" }: { children: React.ReactNode; classNa
 
 const inputClass =
   "border-[#e2cbc2] bg-[#fdf6f1] text-[#3a2228] placeholder:text-[#b89a93]";
-const saveBtnClass = "rounded-full bg-[#7b2e3c] font-semibold text-[#fdf6f1] hover:bg-[#651f2c]";
+const saveBtnClass =
+  "rounded-full bg-[#7b2e3c] font-semibold text-[#fdf6f1] hover:bg-[#651f2c]";
 
 export default function AccountPage() {
   const router = useRouter();
   const { user, isLoading, logout, refreshAuth } = useAuth();
   const [section, setSection] = useState<Section>("account");
   const [logoutError, setLogoutError] = useState<string | null>(null);
-  const [currentProfileImageUrl, setCurrentProfileImageUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (user) setCurrentProfileImageUrl(user.profileImageUrl ?? null);
-  }, [user]);
+  const [profileImageOverride, setProfileImageOverride] = useState<
+    string | null
+  >();
   const [messages, setMessages] = useState<SentMessage[]>([]);
   const [messagesLoading, setMessagesLoading] = useState(true);
   const [messagesError, setMessagesError] = useState<string | null>(null);
@@ -197,6 +203,9 @@ export default function AccountPage() {
     );
   }
 
+  const currentProfileImageUrl =
+    profileImageOverride ?? user.profileImageUrl ?? null;
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#f8efe8] via-[#f0dcd6] to-[#e6cbc6] text-[#3a2228]">
       <div className="mx-auto flex max-w-5xl flex-col gap-8 px-6 py-12 md:flex-row">
@@ -263,7 +272,11 @@ export default function AccountPage() {
         {/* ── content ── */}
         <section className="min-w-0 flex-1">
           {section === "account" && (
-            <AccountSection user={user} refreshAuth={refreshAuth} onImageSaved={setCurrentProfileImageUrl} />
+            <AccountSection
+              user={user}
+              refreshAuth={refreshAuth}
+              onImageSaved={setProfileImageOverride}
+            />
           )}
           {section === "messages" && (
             <MessagesSection
@@ -388,6 +401,8 @@ function AccountSection({
 
     setIsSavingImage(true);
     try {
+      // Do not set Content-Type here. The browser must add the multipart
+      // boundary for FormData, otherwise Spring cannot parse the upload.
       const response = await apiFetch("/api/auth/profile-image", {
         method: "POST",
         credentials: "include",
@@ -395,8 +410,11 @@ function AccountSection({
       });
 
       if (response.status === 401) {
+        // Refresh auth context so the UI can react if the cookie expired.
         await refreshAuth();
-        setImageError("Your login expired. Please log in again, then upload the image.");
+        setImageError(
+          "Your login expired. Please log in again, then upload the image.",
+        );
         return;
       }
 
@@ -478,7 +496,10 @@ function AccountSection({
       <div className="space-y-5">
         {/* picture */}
         <Card className="p-5">
-          <form onSubmit={handleImageSubmit} className="flex flex-col gap-5 sm:flex-row sm:items-center">
+          <form
+            onSubmit={handleImageSubmit}
+            className="flex flex-col gap-5 sm:flex-row sm:items-center"
+          >
             {savedProfileImageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -492,10 +513,10 @@ function AccountSection({
               </div>
             )}
             <div className="flex-1">
-            <p className="font-semibold text-[#3a2228]">Profile picture</p>
-            <p className="mb-3 text-sm text-[#9a7d78]">
-              Upload a JPG, PNG, WebP, or GIF image up to 2 MB.
-            </p>
+              <p className="font-semibold text-[#3a2228]">Profile picture</p>
+              <p className="mb-3 text-sm text-[#9a7d78]">
+                Upload a JPG, PNG, WebP, or GIF image up to 2 MB.
+              </p>
               <div className="flex flex-col gap-3 sm:flex-row">
                 <label className="flex flex-1 cursor-pointer items-center rounded-md border border-[#e2cbc2] bg-[#fdf6f1] px-3 py-2 text-sm text-[#6a4a4f] transition-colors hover:bg-[#f1ddd6]">
                   <input
@@ -519,8 +540,14 @@ function AccountSection({
                   {isSavingImage ? "Saving…" : "Save image"}
                 </Button>
               </div>
-              {imageStatus && <p className="mt-2 text-sm text-green-700">{imageStatus}</p>}
-              {imageError && <p className="mt-2 text-sm text-red-700" role="alert">{imageError}</p>}
+              {imageStatus && (
+                <p className="mt-2 text-sm text-green-700">{imageStatus}</p>
+              )}
+              {imageError && (
+                <p className="mt-2 text-sm text-red-700" role="alert">
+                  {imageError}
+                </p>
+              )}
             </div>
           </form>
         </Card>
@@ -554,8 +581,14 @@ function AccountSection({
               {isSavingEmail ? "Sending…" : "Save email"}
             </Button>
           </form>
-          {emailStatus && <p className="text-sm text-green-700">{emailStatus}</p>}
-          {emailError && <p className="text-sm text-red-700" role="alert">{emailError}</p>}
+          {emailStatus && (
+            <p className="text-sm text-green-700">{emailStatus}</p>
+          )}
+          {emailError && (
+            <p className="text-sm text-red-700" role="alert">
+              {emailError}
+            </p>
+          )}
         </Card>
 
         {/* password */}
@@ -565,49 +598,51 @@ function AccountSection({
           </p>
           <form onSubmit={handlePasswordSubmit} className="space-y-3">
             <div className="grid gap-3 sm:grid-cols-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="cur-pass" className="text-[#6a4a4f]">
-                Current
-              </Label>
-              <Input
-                id="cur-pass"
-                type="password"
-                value={currentPassword}
-                onChange={(event) =>
-                  setCurrentPassword(event.currentTarget.value)
-                }
-                autoComplete="current-password"
-                className={inputClass}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="new-pass" className="text-[#6a4a4f]">
-                New
-              </Label>
-              <Input
-                id="new-pass"
-                type="password"
-                value={newPassword}
-                onChange={(event) => setNewPassword(event.currentTarget.value)}
-                autoComplete="new-password"
-                className={inputClass}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="confirm-pass" className="text-[#6a4a4f]">
-                Confirm
-              </Label>
-              <Input
-                id="confirm-pass"
-                type="password"
-                value={confirmPassword}
-                onChange={(event) =>
-                  setConfirmPassword(event.currentTarget.value)
-                }
-                autoComplete="new-password"
-                className={inputClass}
-              />
-            </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="cur-pass" className="text-[#6a4a4f]">
+                  Current
+                </Label>
+                <Input
+                  id="cur-pass"
+                  type="password"
+                  value={currentPassword}
+                  onChange={(event) =>
+                    setCurrentPassword(event.currentTarget.value)
+                  }
+                  autoComplete="current-password"
+                  className={inputClass}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="new-pass" className="text-[#6a4a4f]">
+                  New
+                </Label>
+                <Input
+                  id="new-pass"
+                  type="password"
+                  value={newPassword}
+                  onChange={(event) =>
+                    setNewPassword(event.currentTarget.value)
+                  }
+                  autoComplete="new-password"
+                  className={inputClass}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="confirm-pass" className="text-[#6a4a4f]">
+                  Confirm
+                </Label>
+                <Input
+                  id="confirm-pass"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(event) =>
+                    setConfirmPassword(event.currentTarget.value)
+                  }
+                  autoComplete="new-password"
+                  className={inputClass}
+                />
+              </div>
             </div>
             <Button
               type="submit"
@@ -617,8 +652,14 @@ function AccountSection({
               {isSavingPassword ? "Updating…" : "Update password"}
             </Button>
           </form>
-          {passwordStatus && <p className="text-sm text-green-700">{passwordStatus}</p>}
-          {passwordError && <p className="text-sm text-red-700" role="alert">{passwordError}</p>}
+          {passwordStatus && (
+            <p className="text-sm text-green-700">{passwordStatus}</p>
+          )}
+          {passwordError && (
+            <p className="text-sm text-red-700" role="alert">
+              {passwordError}
+            </p>
+          )}
         </Card>
       </div>
     </Panel>
@@ -656,29 +697,31 @@ function MessagesSection({
         </Card>
       )}
       {!isLoading && !error && messages.length > 0 && (
-      <Card className="divide-y divide-[#e7d3ca]">
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className="flex flex-wrap items-center justify-between gap-3 p-4"
-          >
-            <div className="min-w-0">
-              <p className="truncate font-medium text-[#3a2228]">{msg.subject}</p>
-              <p className="text-xs text-[#9a7d78]">
-                Sent{" "}
-                {new Date(msg.sentAt).toLocaleDateString(undefined, {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </p>
+        <Card className="divide-y divide-[#e7d3ca]">
+          {messages.map((msg) => (
+            <div
+              key={msg.id}
+              className="flex flex-wrap items-center justify-between gap-3 p-4"
+            >
+              <div className="min-w-0">
+                <p className="truncate font-medium text-[#3a2228]">
+                  {msg.subject}
+                </p>
+                <p className="text-xs text-[#9a7d78]">
+                  Sent{" "}
+                  {new Date(msg.sentAt).toLocaleDateString(undefined, {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </p>
+              </div>
+              <span className="shrink-0 rounded-full bg-[#3a2228]/8 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-[#6a4a4f]">
+                Sent
+              </span>
             </div>
-            <span className="shrink-0 rounded-full bg-[#3a2228]/8 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-[#6a4a4f]">
-              Sent
-            </span>
-          </div>
-        ))}
-      </Card>
+          ))}
+        </Card>
       )}
     </Panel>
   );
@@ -708,11 +751,13 @@ function StatsSection({
   );
   const totalWins = stats?.totalWins ?? 0;
 
-  // next anniversary
+  // Keep the anniversary card dynamic without needing a backend field.
   const nextAnniv = new Date(joined);
   nextAnniv.setFullYear(now.getFullYear());
   if (nextAnniv < now) nextAnniv.setFullYear(now.getFullYear() + 1);
-  const daysToAnniv = Math.ceil((nextAnniv.getTime() - now.getTime()) / 86_400_000);
+  const daysToAnniv = Math.ceil(
+    (nextAnniv.getTime() - now.getTime()) / 86_400_000,
+  );
 
   return (
     <Panel title="Stats">
@@ -754,48 +799,56 @@ function StatsSection({
 
       {!isLoading && !error && stats && (
         <>
-      {/* games won by difficulty */}
-      <p className="mb-3 flex items-center gap-2 text-sm font-semibold text-[#6a4a4f]">
-        <Trophy className="size-4 text-[#7b2e3c]" /> Wins vs. bots
-      </p>
-      <div className="grid gap-4 sm:grid-cols-3">
-        {stats.winsByDifficulty.map((w) => {
-          const pct = totalWins ? Math.round((w.count / totalWins) * 100) : 0;
-          const color = DIFFICULTY_COLORS[w.level] ?? "#7b2e3c";
-          return (
-            <Card key={w.level} className="p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-[#6a4a4f]">{w.level}</span>
-                <span className="size-2.5 rounded-full" style={{ background: color }} />
-              </div>
-              <p className="mt-2 text-4xl font-bold text-[#3a2228]">{w.count}</p>
-              {/* mini bar */}
-              <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-[#f0ddd6]">
-                <div
-                  className="h-full rounded-full"
-                  style={{ width: `${pct}%`, background: color }}
-                />
-              </div>
-            </Card>
-          );
-        })}
-      </div>
+          {/* games won by difficulty */}
+          <p className="mb-3 flex items-center gap-2 text-sm font-semibold text-[#6a4a4f]">
+            <Trophy className="size-4 text-[#7b2e3c]" /> Wins vs. bots
+          </p>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {stats.winsByDifficulty.map((w) => {
+              const pct = totalWins
+                ? Math.round((w.count / totalWins) * 100)
+                : 0;
+              const color = DIFFICULTY_COLORS[w.level] ?? "#7b2e3c";
+              return (
+                <Card key={w.level} className="p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-[#6a4a4f]">
+                      {w.level}
+                    </span>
+                    <span
+                      className="size-2.5 rounded-full"
+                      style={{ background: color }}
+                    />
+                  </div>
+                  <p className="mt-2 text-4xl font-bold text-[#3a2228]">
+                    {w.count}
+                  </p>
+                  <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-[#f0ddd6]">
+                    <div
+                      className="h-full rounded-full"
+                      style={{ width: `${pct}%`, background: color }}
+                    />
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
 
-      <p className="mt-8 mb-3 flex items-center gap-2 text-sm font-semibold text-[#6a4a4f]">
-        <BarChart3 className="size-4 text-[#7b2e3c]" /> Wins by game
-      </p>
-      <div className="grid gap-4 sm:grid-cols-2">
-        {stats.winsByGame.map((game) => (
-          <Card key={game.game} className="p-4">
-            <p className="text-sm font-medium text-[#6a4a4f]">
-              {game.game}
-            </p>
-            <p className="mt-2 text-4xl font-bold text-[#3a2228]">
-              {game.count}
-            </p>
-          </Card>
-        ))}
-      </div>
+          <p className="mt-8 mb-3 flex items-center gap-2 text-sm font-semibold text-[#6a4a4f]">
+            <BarChart3 className="size-4 text-[#7b2e3c]" /> Wins by game
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {stats.winsByGame.map((game) => (
+              <Card key={game.game} className="p-4">
+                <p className="text-sm font-medium text-[#6a4a4f]">
+                  {game.game}
+                </p>
+                <p className="mt-2 text-4xl font-bold text-[#3a2228]">
+                  {game.count}
+                </p>
+              </Card>
+            ))}
+          </div>
         </>
       )}
 
@@ -816,7 +869,9 @@ function StatsSection({
         </div>
         <div className="text-right">
           <p className="text-sm text-[#9a7d78]">Next anniversary in</p>
-          <p className="text-xl font-semibold text-[#7b2e3c]">{daysToAnniv} days</p>
+          <p className="text-xl font-semibold text-[#7b2e3c]">
+            {daysToAnniv} days
+          </p>
         </div>
       </Card>
     </Panel>
