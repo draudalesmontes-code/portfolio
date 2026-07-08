@@ -10,10 +10,11 @@ export default function Footer() {
         <div className="flex flex-wrap items-center justify-center gap-6">
           <a
             href="mailto:draudalesmontes@gmail.com"
+            aria-label="Email Diego at draudalesmontes@gmail.com"
             className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
           >
             <Mail className="size-5" />
-            Email
+            draudalesmontes@gmail.com
           </a>
 
           <a
