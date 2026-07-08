@@ -37,6 +37,15 @@ public class User {
     @Column(name = "profile_image_url")
     private String profileImageUrl;
 
+    @Column(name = "profile_image_content_type")
+    private String profileImageContentType;
+
+    @Column(name = "profile_image_data", columnDefinition = "BYTEA")
+    private byte[] profileImageData;
+
+    @Column(name = "profile_image_updated_at")
+    private OffsetDateTime profileImageUpdatedAt;
+
     @Column(name = "pending_email")
     private String pendingEmail;
 

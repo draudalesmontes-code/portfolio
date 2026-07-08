@@ -17,6 +17,7 @@ import com.diego.portfolio.auth.dto.ChangeEmailRequest;
 import com.diego.portfolio.auth.dto.ChangePasswordRequest;
 import com.diego.portfolio.auth.dto.CurrentUserResponse;
 import com.diego.portfolio.auth.dto.LoginRequest;
+import com.diego.portfolio.auth.dto.ProfileImageResource;
 import com.diego.portfolio.auth.dto.RegisterRequest;
 import com.diego.portfolio.auth.dto.UpdateProfileImageRequest;
 import com.diego.portfolio.common.email.EmailService;
@@ -29,6 +30,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -374,6 +376,69 @@ class AuthServiceTest {
         assertEquals("https://example.com/avatar.jpg", user.getProfileImageUrl());
         assertEquals("https://example.com/avatar.jpg", response.profileImageUrl());
         verify(userRepository).save(user);
+    }
+
+    @Test
+    void uploadProfileImage_validFile_savesBytesAndReturnsBackendUrl() {
+        User user = verifiedUser();
+        user.setId(42L);
+        when(userRepository.findByEmail("diego@example.com"))
+            .thenReturn(Optional.of(user));
+        MockMultipartFile image = new MockMultipartFile(
+            "image",
+            "avatar.png",
+            "image/png",
+            new byte[] {1, 2, 3}
+        );
+
+        CurrentUserResponse response = authService.uploadProfileImage(
+            "diego@example.com",
+            image
+        );
+
+        assertEquals("image/png", user.getProfileImageContentType());
+        assertEquals(3, user.getProfileImageData().length);
+        assertNull(user.getProfileImageUrl());
+        assertTrue(response.profileImageUrl().startsWith(
+            "/api/auth/users/42/profile-image?v="
+        ));
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    void uploadProfileImage_invalidContentType_throwsBadRequest() {
+        User user = verifiedUser();
+        when(userRepository.findByEmail("diego@example.com"))
+            .thenReturn(Optional.of(user));
+        MockMultipartFile image = new MockMultipartFile(
+            "image",
+            "avatar.txt",
+            "text/plain",
+            new byte[] {1, 2, 3}
+        );
+
+        ResponseStatusException exception = assertThrows(
+            ResponseStatusException.class,
+            () -> authService.uploadProfileImage("diego@example.com", image)
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void getProfileImage_existingImage_returnsBytesAndContentType() {
+        User user = verifiedUser();
+        user.setId(42L);
+        user.setProfileImageContentType("image/png");
+        user.setProfileImageData(new byte[] {1, 2, 3});
+        when(userRepository.findById(42L))
+            .thenReturn(Optional.of(user));
+
+        ProfileImageResource resource = authService.getProfileImage(42L);
+
+        assertEquals("image/png", resource.contentType());
+        assertEquals(3, resource.data().length);
     }
 
     @Test

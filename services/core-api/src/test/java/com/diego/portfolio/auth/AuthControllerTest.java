@@ -7,7 +7,9 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -15,6 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.diego.portfolio.auth.dto.AuthResponse;
 import com.diego.portfolio.auth.dto.CurrentUserResponse;
 import com.diego.portfolio.auth.dto.LoginRequest;
+import com.diego.portfolio.auth.dto.ProfileImageResource;
 import com.diego.portfolio.auth.dto.RegisterRequest;
 import com.diego.portfolio.common.exception.GlobalExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,6 +28,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -201,6 +205,53 @@ class AuthControllerTest {
                 HttpHeaders.SET_COOKIE,
                 containsString("Max-Age=0")
             ));
+    }
+
+    @Test
+    void uploadProfileImage_authenticated_returnsUpdatedProfile() throws Exception {
+        when(authService.uploadProfileImage(any(), any()))
+            .thenReturn(new CurrentUserResponse(
+                42L,
+                "diego@example.com",
+                "Diego",
+                "USER",
+                "/api/auth/users/42/profile-image?v=123",
+                OffsetDateTime.parse("2026-03-04T12:00:00Z")
+            ));
+        UsernamePasswordAuthenticationToken authentication =
+            new UsernamePasswordAuthenticationToken(
+                "diego@example.com",
+                null,
+                java.util.List.of()
+            );
+        MockMultipartFile image = new MockMultipartFile(
+            "image",
+            "avatar.png",
+            "image/png",
+            new byte[] {1, 2, 3}
+        );
+
+        mockMvc.perform(multipart("/auth/profile-image")
+                .file(image)
+                .principal(authentication))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.profileImageUrl").value(
+                "/api/auth/users/42/profile-image?v=123"
+            ));
+    }
+
+    @Test
+    void profileImage_existingImage_returnsImageBytes() throws Exception {
+        when(authService.getProfileImage(42L))
+            .thenReturn(new ProfileImageResource(
+                new byte[] {1, 2, 3},
+                "image/png"
+            ));
+
+        mockMvc.perform(get("/auth/users/42/profile-image"))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType("image/png"))
+            .andExpect(content().bytes(new byte[] {1, 2, 3}));
     }
 
     @Test

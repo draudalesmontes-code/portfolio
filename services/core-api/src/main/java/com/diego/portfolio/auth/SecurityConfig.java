@@ -72,6 +72,7 @@ public class SecurityConfig {
                     HttpMethod.GET,
                     "/auth/verify",
                     "/auth/confirm-email-change",
+                    "/auth/users/*/profile-image",
                     "/auth/csrf",
                     "/actuator/health"
                 ).permitAll()

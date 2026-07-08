@@ -5,14 +5,17 @@ import com.diego.portfolio.auth.dto.ChangeEmailRequest;
 import com.diego.portfolio.auth.dto.ChangePasswordRequest;
 import com.diego.portfolio.auth.dto.CurrentUserResponse;
 import com.diego.portfolio.auth.dto.LoginRequest;
+import com.diego.portfolio.auth.dto.ProfileImageResource;
 import com.diego.portfolio.auth.dto.RegisterRequest;
 import com.diego.portfolio.auth.dto.UpdateProfileImageRequest;
 import com.diego.portfolio.common.email.EmailService;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.time.Duration;
 import java.time.OffsetDateTime;
@@ -20,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
@@ -29,6 +33,14 @@ public class AuthService {
         Duration.ofHours(24);
     private static final Duration EMAIL_CHANGE_TOKEN_TTL =
         Duration.ofHours(24);
+    private static final long MAX_PROFILE_IMAGE_BYTES =
+        2L * 1024L * 1024L;
+    private static final Set<String> ALLOWED_PROFILE_IMAGE_TYPES = Set.of(
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "image/gif"
+    );
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -113,7 +125,7 @@ public class AuthService {
             user.getEmail(),
             user.getDisplayName(),
             user.getRole(),
-            user.getProfileImageUrl(),
+            profileImageUrlFor(user),
             user.getCreatedAt()
         );
     }
@@ -217,8 +229,79 @@ public class AuthService {
             request.profileImageUrl()
         );
         user.setProfileImageUrl(profileImageUrl);
+        user.setProfileImageData(null);
+        user.setProfileImageContentType(null);
+        user.setProfileImageUpdatedAt(OffsetDateTime.now());
         userRepository.save(user);
         return toCurrentUserResponse(user);
+    }
+
+    public CurrentUserResponse uploadProfileImage(
+        String authenticatedEmail,
+        MultipartFile image
+    ) {
+        User user = requireUser(authenticatedEmail);
+
+        if (image == null || image.isEmpty()) {
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Profile image file is required."
+            );
+        }
+
+        if (image.getSize() > MAX_PROFILE_IMAGE_BYTES) {
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Profile image must be 2 MB or smaller."
+            );
+        }
+
+        String contentType = image.getContentType();
+        if (contentType == null
+            || !ALLOWED_PROFILE_IMAGE_TYPES.contains(
+                contentType.toLowerCase(Locale.ROOT)
+            )) {
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Profile image must be a JPG, PNG, WebP, or GIF file."
+            );
+        }
+
+        try {
+            user.setProfileImageData(image.getBytes());
+        } catch (IOException exception) {
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Profile image could not be read."
+            );
+        }
+
+        user.setProfileImageContentType(contentType.toLowerCase(Locale.ROOT));
+        user.setProfileImageUrl(null);
+        user.setProfileImageUpdatedAt(OffsetDateTime.now());
+        userRepository.save(user);
+        return toCurrentUserResponse(user);
+    }
+
+    public ProfileImageResource getProfileImage(Long userId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Profile image was not found."
+            ));
+
+        if (user.getProfileImageData() == null
+            || user.getProfileImageContentType() == null) {
+            throw new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Profile image was not found."
+            );
+        }
+
+        return new ProfileImageResource(
+            user.getProfileImageData(),
+            user.getProfileImageContentType()
+        );
     }
 
     public void resendVerificationEmail(String email) {
@@ -298,7 +381,7 @@ public class AuthService {
             user.getEmail(),
             user.getDisplayName(),
             user.getRole(),
-            user.getProfileImageUrl(),
+            profileImageUrlFor(user),
             user.getCreatedAt()
         );
     }
@@ -335,5 +418,17 @@ public class AuthService {
         }
 
         return normalizedUrl;
+    }
+
+    private String profileImageUrlFor(User user) {
+        if (user.getProfileImageData() != null && user.getId() != null) {
+            long version = user.getProfileImageUpdatedAt() == null
+                ? 0L
+                : user.getProfileImageUpdatedAt().toInstant().toEpochMilli();
+            return "/api/auth/users/" + user.getId()
+                + "/profile-image?v=" + version;
+        }
+
+        return user.getProfileImageUrl();
     }
 }

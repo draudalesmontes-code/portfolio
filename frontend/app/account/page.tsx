@@ -295,12 +295,10 @@ function AccountSection({
   refreshAuth: () => Promise<AuthUser | null>;
 }) {
   const [email, setEmail] = useState(user.email);
-  const [profileImageUrl, setProfileImageUrl] = useState(
-    user.profileImageUrl ?? "",
-  );
   const [savedProfileImageUrl, setSavedProfileImageUrl] = useState(
     user.profileImageUrl ?? "",
   );
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -353,24 +351,30 @@ function AccountSection({
     setImageStatus(null);
     setImageError(null);
 
-    const nextProfileImageUrl = profileImageUrl.trim();
-    if (
-      nextProfileImageUrl
-      && !/^https?:\/\/[^\s]+$/i.test(nextProfileImageUrl)
-    ) {
-      setImageError("Use a valid http:// or https:// image URL.");
+    if (!selectedImageFile) {
+      setImageError("Choose an image file first.");
       return;
     }
+
+    if (!selectedImageFile.type.startsWith("image/")) {
+      setImageError("Choose a JPG, PNG, WebP, or GIF image.");
+      return;
+    }
+
+    if (selectedImageFile.size > 2 * 1024 * 1024) {
+      setImageError("Profile image must be 2 MB or smaller.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("image", selectedImageFile);
 
     setIsSavingImage(true);
     try {
       const response = await apiFetch("/api/auth/profile-image", {
         method: "POST",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          profileImageUrl: nextProfileImageUrl || null,
-        }),
+        body: formData,
       });
 
       if (!response.ok) {
@@ -382,7 +386,7 @@ function AccountSection({
       const updatedUser = (await response.json()) as AuthUser;
       const updatedProfileImageUrl = updatedUser.profileImageUrl ?? "";
       setSavedProfileImageUrl(updatedProfileImageUrl);
-      setProfileImageUrl(updatedProfileImageUrl);
+      setSelectedImageFile(null);
       await refreshAuth();
       setImageStatus(
         updatedProfileImageUrl
@@ -466,18 +470,22 @@ function AccountSection({
             <div className="flex-1">
             <p className="font-semibold text-[#3a2228]">Profile picture</p>
             <p className="mb-3 text-sm text-[#9a7d78]">
-              Paste a public image URL. Upload storage can be added later.
+              Upload a JPG, PNG, WebP, or GIF image up to 2 MB.
             </p>
               <div className="flex flex-col gap-3 sm:flex-row">
-                <Input
-                  type="url"
-                  value={profileImageUrl}
-                  onChange={(event) =>
-                    setProfileImageUrl(event.currentTarget.value)
-                  }
-                  placeholder="https://example.com/avatar.jpg"
-                  className={inputClass}
-                />
+                <label className="flex flex-1 cursor-pointer items-center rounded-md border border-[#e2cbc2] bg-[#fdf6f1] px-3 py-2 text-sm text-[#6a4a4f] transition-colors hover:bg-[#f1ddd6]">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    className="sr-only"
+                    onChange={(event) =>
+                      setSelectedImageFile(
+                        event.currentTarget.files?.[0] ?? null,
+                      )
+                    }
+                  />
+                  {selectedImageFile?.name ?? "Choose image file"}
+                </label>
                 <Button
                   type="submit"
                   className={saveBtnClass}
