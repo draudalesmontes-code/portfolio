@@ -33,7 +33,8 @@ class EmailServiceTest {
             restClientBuilder,
             "test-api-key",
             "Portfolio <onboarding@example.com>",
-            "http://localhost"
+            "http://localhost",
+            "draudalesmontes@gmail.com"
         );
     }
 
@@ -72,6 +73,35 @@ class EmailServiceTest {
                 "diego@example.com",
                 "verification-token"
             )
+        );
+
+        server.verify();
+    }
+
+    @Test
+    void sendContactNotification_sendsExpectedResendRequest() {
+        server.expect(once(), requestTo("https://api.resend.com/emails"))
+            .andExpect(method(HttpMethod.POST))
+            .andExpect(header("Authorization", "Bearer test-api-key"))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.from").value(
+                "Portfolio <onboarding@example.com>"
+            ))
+            .andExpect(jsonPath("$.to[0]").value("draudalesmontes@gmail.com"))
+            .andExpect(jsonPath("$.reply_to").value("visitor@example.com"))
+            .andExpect(jsonPath("$.subject").value(
+                "Portfolio contact: Project question"
+            ))
+            .andExpect(jsonPath("$.html").value(containsString(
+                "Hello Diego"
+            )))
+            .andRespond(withSuccess());
+
+        emailService.sendContactNotification(
+            "Visitor",
+            "visitor@example.com",
+            "Project question",
+            "Hello Diego"
         );
 
         server.verify();

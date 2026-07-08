@@ -13,9 +13,12 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.diego.portfolio.auth.dto.AuthResponse;
+import com.diego.portfolio.auth.dto.ChangeEmailRequest;
+import com.diego.portfolio.auth.dto.ChangePasswordRequest;
 import com.diego.portfolio.auth.dto.CurrentUserResponse;
 import com.diego.portfolio.auth.dto.LoginRequest;
 import com.diego.portfolio.auth.dto.RegisterRequest;
+import com.diego.portfolio.auth.dto.UpdateProfileImageRequest;
 import com.diego.portfolio.common.email.EmailService;
 import java.time.OffsetDateTime;
 import java.util.Optional;
@@ -246,6 +249,149 @@ class AuthServiceTest {
         assertEquals("diego@example.com", response.email());
         assertEquals("Diego", response.displayName());
         assertEquals("USER", response.role());
+    }
+
+    @Test
+    void changePassword_validCurrentPassword_hashesAndSavesNewPassword() {
+        User user = verifiedUser();
+        when(userRepository.findByEmail("diego@example.com"))
+            .thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("old-password", "hashed-password"))
+            .thenReturn(true);
+        when(passwordEncoder.encode("new-password"))
+            .thenReturn("new-hash");
+
+        authService.changePassword(
+            "diego@example.com",
+            new ChangePasswordRequest("old-password", "new-password")
+        );
+
+        assertEquals("new-hash", user.getPasswordHash());
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    void changePassword_wrongCurrentPassword_throwsUnauthorized() {
+        User user = verifiedUser();
+        when(userRepository.findByEmail("diego@example.com"))
+            .thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("wrong-password", "hashed-password"))
+            .thenReturn(false);
+
+        ResponseStatusException exception = assertThrows(
+            ResponseStatusException.class,
+            () -> authService.changePassword(
+                "diego@example.com",
+                new ChangePasswordRequest("wrong-password", "new-password")
+            )
+        );
+
+        assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void requestEmailChange_newEmail_setsPendingEmailAndSendsConfirmation() {
+        User user = verifiedUser();
+        user.setId(7L);
+        when(userRepository.findByEmail("diego@example.com"))
+            .thenReturn(Optional.of(user));
+        when(userRepository.findByEmail("new@example.com"))
+            .thenReturn(Optional.empty());
+
+        authService.requestEmailChange(
+            "diego@example.com",
+            new ChangeEmailRequest(" New@Example.com ")
+        );
+
+        assertEquals("new@example.com", user.getPendingEmail());
+        assertNotNull(user.getEmailChangeToken());
+        assertNotNull(user.getEmailChangeTokenExpiresAt());
+        verify(userRepository).save(user);
+        verify(emailService).sendEmailChangeConfirmation(
+            "new@example.com",
+            user.getEmailChangeToken()
+        );
+    }
+
+    @Test
+    void requestEmailChange_existingEmail_throwsConflict() {
+        User user = verifiedUser();
+        user.setId(7L);
+        User otherUser = verifiedUser();
+        otherUser.setId(8L);
+        otherUser.setEmail("other@example.com");
+        when(userRepository.findByEmail("diego@example.com"))
+            .thenReturn(Optional.of(user));
+        when(userRepository.findByEmail("other@example.com"))
+            .thenReturn(Optional.of(otherUser));
+
+        ResponseStatusException exception = assertThrows(
+            ResponseStatusException.class,
+            () -> authService.requestEmailChange(
+                "diego@example.com",
+                new ChangeEmailRequest("other@example.com")
+            )
+        );
+
+        assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void confirmEmailChange_validToken_updatesEmailAndClearsPendingFields() {
+        String token = "123e4567-e89b-12d3-a456-426614174000";
+        User user = verifiedUser();
+        user.setId(7L);
+        user.setPendingEmail("new@example.com");
+        user.setEmailChangeToken(token);
+        user.setEmailChangeTokenExpiresAt(OffsetDateTime.now().plusHours(1));
+        when(userRepository.findByEmailChangeToken(token))
+            .thenReturn(Optional.of(user));
+        when(userRepository.findByEmail("new@example.com"))
+            .thenReturn(Optional.empty());
+
+        authService.confirmEmailChange(token);
+
+        assertEquals("new@example.com", user.getEmail());
+        assertNull(user.getPendingEmail());
+        assertNull(user.getEmailChangeToken());
+        assertNull(user.getEmailChangeTokenExpiresAt());
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    void updateProfileImage_validUrl_savesTrimmedUrl() {
+        User user = verifiedUser();
+        when(userRepository.findByEmail("diego@example.com"))
+            .thenReturn(Optional.of(user));
+
+        CurrentUserResponse response = authService.updateProfileImage(
+            "diego@example.com",
+            new UpdateProfileImageRequest(" https://example.com/avatar.jpg ")
+        );
+
+        assertEquals("https://example.com/avatar.jpg", user.getProfileImageUrl());
+        assertEquals("https://example.com/avatar.jpg", response.profileImageUrl());
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    void updateProfileImage_invalidUrl_throwsBadRequest() {
+        User user = verifiedUser();
+        when(userRepository.findByEmail("diego@example.com"))
+            .thenReturn(Optional.of(user));
+
+        ResponseStatusException exception = assertThrows(
+            ResponseStatusException.class,
+            () -> authService.updateProfileImage(
+                "diego@example.com",
+                new UpdateProfileImageRequest("javascript:alert(1)")
+            )
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+        verify(userRepository, never()).save(any(User.class));
     }
 
     @Test

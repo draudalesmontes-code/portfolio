@@ -34,6 +34,18 @@ public class User {
     @Column(name = "verification_token_expires_at")
     private OffsetDateTime verificationTokenExpiresAt;
 
+    @Column(name = "profile_image_url")
+    private String profileImageUrl;
+
+    @Column(name = "pending_email")
+    private String pendingEmail;
+
+    @Column(name = "email_change_token")
+    private String emailChangeToken;
+
+    @Column(name = "email_change_token_expires_at")
+    private OffsetDateTime emailChangeTokenExpiresAt;
+
     @Column(name = "created_at")
     private OffsetDateTime createdAt = OffsetDateTime.now();
 }

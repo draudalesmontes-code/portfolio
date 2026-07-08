@@ -7,6 +7,7 @@ public record CurrentUserResponse(
     String email,
     String displayName,
     String role,
+    String profileImageUrl,
     OffsetDateTime createdAt
 ) {
 }

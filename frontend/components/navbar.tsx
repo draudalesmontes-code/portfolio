@@ -143,7 +143,7 @@ export default function Navbar() {
           </Link>
         </Button>
         <Avatar>
-          <AvatarImage src="" alt="" />
+          <AvatarImage src={user?.profileImageUrl ?? ""} alt={user?.displayName ?? ""} />
           <AvatarFallback>
             {initials || <User className="h-4 w-4" />}
           </AvatarFallback>

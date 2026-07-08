@@ -1,10 +1,13 @@
 package com.diego.portfolio.auth;
 
 import com.diego.portfolio.auth.dto.AuthResponse;
+import com.diego.portfolio.auth.dto.ChangeEmailRequest;
+import com.diego.portfolio.auth.dto.ChangePasswordRequest;
 import com.diego.portfolio.auth.dto.CurrentUserResponse;
 import com.diego.portfolio.auth.dto.LoginRequest;
 import com.diego.portfolio.auth.dto.RegisterRequest;
 import com.diego.portfolio.auth.dto.ResendVerificationRequest;
+import com.diego.portfolio.auth.dto.UpdateProfileImageRequest;
 import jakarta.validation.Valid;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
@@ -58,6 +61,12 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/confirm-email-change")
+    public ResponseEntity<Void> confirmEmailChange(@RequestParam String token) {
+        authService.confirmEmailChange(token);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/me")
     public ResponseEntity<CurrentUserResponse> currentUser(
         Authentication authentication
@@ -79,6 +88,45 @@ public class AuthController {
             .build();
     }
 
+    @PostMapping("/change-password")
+    public ResponseEntity<CurrentUserResponse> changePassword(
+        Authentication authentication,
+        @Valid @RequestBody ChangePasswordRequest request
+    ) {
+        return ResponseEntity.ok(
+            authService.changePassword(
+                requireAuthenticatedEmail(authentication),
+                request
+            )
+        );
+    }
+
+    @PostMapping("/change-email")
+    public ResponseEntity<CurrentUserResponse> changeEmail(
+        Authentication authentication,
+        @Valid @RequestBody ChangeEmailRequest request
+    ) {
+        return ResponseEntity.ok(
+            authService.requestEmailChange(
+                requireAuthenticatedEmail(authentication),
+                request
+            )
+        );
+    }
+
+    @PostMapping("/profile-image")
+    public ResponseEntity<CurrentUserResponse> updateProfileImage(
+        Authentication authentication,
+        @Valid @RequestBody UpdateProfileImageRequest request
+    ) {
+        return ResponseEntity.ok(
+            authService.updateProfileImage(
+                requireAuthenticatedEmail(authentication),
+                request
+            )
+        );
+    }
+
     @PostMapping("/resend-verification")
     public ResponseEntity<Void> resendVerification(
         @Valid @RequestBody ResendVerificationRequest request
@@ -95,5 +143,16 @@ public class AuthController {
             .path("/")
             .maxAge(maxAge)
             .build();
+    }
+
+    private String requireAuthenticatedEmail(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                HttpStatus.UNAUTHORIZED,
+                "Authentication is required."
+            );
+        }
+
+        return authentication.getName();
     }
 }

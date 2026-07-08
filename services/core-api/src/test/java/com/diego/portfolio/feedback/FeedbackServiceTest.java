@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import com.diego.portfolio.auth.User;
 import com.diego.portfolio.auth.UserRepository;
+import com.diego.portfolio.common.email.EmailService;
 import com.diego.portfolio.feedback.dto.FeedbackRequest;
 import com.diego.portfolio.feedback.dto.SentFeedbackResponse;
 import java.time.OffsetDateTime;
@@ -33,6 +34,9 @@ class FeedbackServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private EmailService emailService;
 
     @InjectMocks
     private FeedbackService feedbackService;
@@ -62,6 +66,12 @@ class FeedbackServiceTest {
             savedFeedback.getSubject()
         );
         assertNull(savedFeedback.getUserId());
+        verify(emailService).sendContactNotification(
+            "Diego",
+            "diego@example.com",
+            "Hello from the contact form.",
+            "Hello from the contact form."
+        );
     }
 
     @Test
@@ -116,7 +126,7 @@ class FeedbackServiceTest {
         );
 
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
-        verifyNoInteractions(feedbackRepository, userRepository);
+        verifyNoInteractions(feedbackRepository, userRepository, emailService);
     }
 
     @Test
@@ -136,6 +146,7 @@ class FeedbackServiceTest {
 
         assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
         verify(feedbackRepository, never()).save(any(Feedback.class));
+        verifyNoInteractions(emailService);
     }
 
     @Test

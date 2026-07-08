@@ -162,6 +162,7 @@ class AuthControllerTest {
                 "diego@example.com",
                 "Diego",
                 "USER",
+                "https://example.com/avatar.jpg",
                 OffsetDateTime.parse("2026-03-04T12:00:00Z")
             ));
         UsernamePasswordAuthenticationToken authentication =
@@ -176,7 +177,10 @@ class AuthControllerTest {
             .andExpect(jsonPath("$.id").value(42))
             .andExpect(jsonPath("$.email").value("diego@example.com"))
             .andExpect(jsonPath("$.displayName").value("Diego"))
-            .andExpect(jsonPath("$.role").value("USER"));
+            .andExpect(jsonPath("$.role").value("USER"))
+            .andExpect(jsonPath("$.profileImageUrl").value(
+                "https://example.com/avatar.jpg"
+            ));
     }
 
     @Test

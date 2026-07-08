@@ -2,6 +2,7 @@ package com.diego.portfolio.feedback;
 
 import com.diego.portfolio.auth.User;
 import com.diego.portfolio.auth.UserRepository;
+import com.diego.portfolio.common.email.EmailService;
 import com.diego.portfolio.feedback.dto.FeedbackRequest;
 import com.diego.portfolio.feedback.dto.SentFeedbackResponse;
 import java.util.List;
@@ -16,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class FeedbackService {
     private final FeedbackRepository feedbackRepository;
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
     public Long submit(
         FeedbackRequest request,
@@ -50,6 +52,12 @@ public class FeedbackService {
         feedback.setUserId(userId);
 
         Feedback savedFeedback = feedbackRepository.save(feedback);
+        emailService.sendContactNotification(
+            savedFeedback.getAuthorName(),
+            savedFeedback.getContactEmail(),
+            savedFeedback.getSubject(),
+            savedFeedback.getMessage()
+        );
         return savedFeedback.getId();
     }
 

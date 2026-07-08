@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   BarChart3,
@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { apiFetch } from "@/lib/api";
+import type { AuthUser } from "@/hooks/useAuth";
 
 type SentMessage = {
   id: number;
@@ -34,6 +35,11 @@ type GameStats = {
     game: string;
     count: number;
   }[];
+};
+
+type ApiError = {
+  message?: string;
+  fields?: Record<string, string>;
 };
 
 const DIFFICULTY_COLORS: Record<string, string> = {
@@ -78,7 +84,7 @@ const saveBtnClass = "rounded-full bg-[#7b2e3c] font-semibold text-[#fdf6f1] hov
 
 export default function AccountPage() {
   const router = useRouter();
-  const { user, isLoading, logout } = useAuth();
+  const { user, isLoading, logout, refreshAuth } = useAuth();
   const [section, setSection] = useState<Section>("account");
   const [logoutError, setLogoutError] = useState<string | null>(null);
   const [messages, setMessages] = useState<SentMessage[]>([]);
@@ -242,7 +248,9 @@ export default function AccountPage() {
 
         {/* ── content ── */}
         <section className="min-w-0 flex-1">
-          {section === "account" && <AccountSection email={user.email} />}
+          {section === "account" && (
+            <AccountSection user={user} refreshAuth={refreshAuth} />
+          )}
           {section === "messages" && (
             <MessagesSection
               messages={messages}
@@ -265,25 +273,217 @@ export default function AccountPage() {
   );
 }
 
+function errorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return fallback;
+}
+
+async function readApiError(response: Response, fallback: string) {
+  const error = (await response.json().catch(() => ({}))) as ApiError;
+  return error.message ?? fallback;
+}
+
 // ── Account ──────────────────────────────────────────────────────────────────
-function AccountSection({ email }: { email: string }) {
+function AccountSection({
+  user,
+  refreshAuth,
+}: {
+  user: AuthUser;
+  refreshAuth: () => Promise<AuthUser | null>;
+}) {
+  const [email, setEmail] = useState(user.email);
+  const [profileImageUrl, setProfileImageUrl] = useState(
+    user.profileImageUrl ?? "",
+  );
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [emailStatus, setEmailStatus] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [imageStatus, setImageStatus] = useState<string | null>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const [passwordStatus, setPasswordStatus] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [isSavingEmail, setIsSavingEmail] = useState(false);
+  const [isSavingImage, setIsSavingImage] = useState(false);
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+
+  async function handleEmailSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setEmailStatus(null);
+    setEmailError(null);
+
+    const newEmail = email.trim();
+    if (!newEmail) {
+      setEmailError("Email is required.");
+      return;
+    }
+
+    setIsSavingEmail(true);
+    try {
+      const response = await apiFetch("/api/auth/change-email", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ newEmail }),
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          await readApiError(response, "Unable to request email change."),
+        );
+      }
+
+      setEmailStatus("Check the new email address to confirm this change.");
+    } catch (error) {
+      setEmailError(errorMessage(error, "Unable to request email change."));
+    } finally {
+      setIsSavingEmail(false);
+    }
+  }
+
+  async function handleImageSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setImageStatus(null);
+    setImageError(null);
+
+    const nextProfileImageUrl = profileImageUrl.trim();
+    if (
+      nextProfileImageUrl
+      && !/^https?:\/\/[^\s]+$/i.test(nextProfileImageUrl)
+    ) {
+      setImageError("Use a valid http:// or https:// image URL.");
+      return;
+    }
+
+    setIsSavingImage(true);
+    try {
+      const response = await apiFetch("/api/auth/profile-image", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          profileImageUrl: nextProfileImageUrl || null,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          await readApiError(response, "Unable to update profile image."),
+        );
+      }
+
+      await refreshAuth();
+      setImageStatus(
+        nextProfileImageUrl
+          ? "Profile picture updated."
+          : "Profile picture cleared.",
+      );
+    } catch (error) {
+      setImageError(errorMessage(error, "Unable to update profile image."));
+    } finally {
+      setIsSavingImage(false);
+    }
+  }
+
+  async function handlePasswordSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setPasswordStatus(null);
+    setPasswordError(null);
+
+    if (!currentPassword || !newPassword) {
+      setPasswordError("Current and new password are required.");
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setPasswordError("New password must be at least 8 characters.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError("New passwords do not match.");
+      return;
+    }
+
+    setIsSavingPassword(true);
+    try {
+      const response = await apiFetch("/api/auth/change-password", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          await readApiError(response, "Unable to update password."),
+        );
+      }
+
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setPasswordStatus("Password updated.");
+    } catch (error) {
+      setPasswordError(errorMessage(error, "Unable to update password."));
+    } finally {
+      setIsSavingPassword(false);
+    }
+  }
+
   return (
     <Panel title="Account">
       <div className="space-y-5">
         {/* picture */}
-        <Card className="flex items-center gap-5 p-5">
-          <div className="flex size-20 items-center justify-center rounded-full bg-[#f1ddd6] text-[#c2a39c]">
-            <User className="size-9" />
-          </div>
-          <div>
+        <Card className="p-5">
+          <form onSubmit={handleImageSubmit} className="flex flex-col gap-5 sm:flex-row sm:items-center">
+            {user.profileImageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={user.profileImageUrl}
+                alt={user.displayName}
+                className="size-20 rounded-full object-cover"
+              />
+            ) : (
+              <div className="flex size-20 items-center justify-center rounded-full bg-[#f1ddd6] text-[#c2a39c]">
+                <User className="size-9" />
+              </div>
+            )}
+            <div className="flex-1">
             <p className="font-semibold text-[#3a2228]">Profile picture</p>
-            <p className="mb-3 text-sm text-[#9a7d78]">PNG or JPG, up to 2&nbsp;MB.</p>
-            <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-[#e2cbc2] bg-[#fdf6f1] px-3.5 py-1.5 text-sm font-medium text-[#6a4a4f] transition-colors hover:bg-[#f1ddd6]">
-              <Camera className="size-4" />
-              Change picture
-              <input type="file" accept="image/*" className="hidden" />
-            </label>
-          </div>
+            <p className="mb-3 text-sm text-[#9a7d78]">
+              Paste a public image URL. Upload storage can be added later.
+            </p>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Input
+                  type="url"
+                  value={profileImageUrl}
+                  onChange={(event) =>
+                    setProfileImageUrl(event.currentTarget.value)
+                  }
+                  placeholder="https://example.com/avatar.jpg"
+                  className={inputClass}
+                />
+                <Button
+                  type="submit"
+                  className={saveBtnClass}
+                  disabled={isSavingImage}
+                >
+                  <Camera className="mr-2 size-4" />
+                  {isSavingImage ? "Saving…" : "Save image"}
+                </Button>
+              </div>
+              {imageStatus && <p className="mt-2 text-sm text-green-700">{imageStatus}</p>}
+              {imageError && <p className="mt-2 text-sm text-red-700" role="alert">{imageError}</p>}
+            </div>
+          </form>
         </Card>
 
         {/* email */}
@@ -291,15 +491,32 @@ function AccountSection({ email }: { email: string }) {
           <p className="flex items-center gap-2 font-semibold text-[#3a2228]">
             <Mail className="size-4 text-[#7b2e3c]" /> Email address
           </p>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <form
+            onSubmit={handleEmailSubmit}
+            className="flex flex-col gap-3 sm:flex-row sm:items-end"
+          >
             <div className="flex-1 space-y-1.5">
               <Label htmlFor="acc-email" className="text-[#6a4a4f]">
                 New email
               </Label>
-              <Input id="acc-email" type="email" defaultValue={email} className={inputClass} />
+              <Input
+                id="acc-email"
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.currentTarget.value)}
+                className={inputClass}
+              />
             </div>
-            <Button className={saveBtnClass}>Save email</Button>
-          </div>
+            <Button
+              type="submit"
+              className={saveBtnClass}
+              disabled={isSavingEmail}
+            >
+              {isSavingEmail ? "Sending…" : "Save email"}
+            </Button>
+          </form>
+          {emailStatus && <p className="text-sm text-green-700">{emailStatus}</p>}
+          {emailError && <p className="text-sm text-red-700" role="alert">{emailError}</p>}
         </Card>
 
         {/* password */}
@@ -307,27 +524,62 @@ function AccountSection({ email }: { email: string }) {
           <p className="flex items-center gap-2 font-semibold text-[#3a2228]">
             <KeyRound className="size-4 text-[#7b2e3c]" /> Change password
           </p>
-          <div className="grid gap-3 sm:grid-cols-3">
+          <form onSubmit={handlePasswordSubmit} className="space-y-3">
+            <div className="grid gap-3 sm:grid-cols-3">
             <div className="space-y-1.5">
               <Label htmlFor="cur-pass" className="text-[#6a4a4f]">
                 Current
               </Label>
-              <Input id="cur-pass" type="password" className={inputClass} />
+              <Input
+                id="cur-pass"
+                type="password"
+                value={currentPassword}
+                onChange={(event) =>
+                  setCurrentPassword(event.currentTarget.value)
+                }
+                autoComplete="current-password"
+                className={inputClass}
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="new-pass" className="text-[#6a4a4f]">
                 New
               </Label>
-              <Input id="new-pass" type="password" className={inputClass} />
+              <Input
+                id="new-pass"
+                type="password"
+                value={newPassword}
+                onChange={(event) => setNewPassword(event.currentTarget.value)}
+                autoComplete="new-password"
+                className={inputClass}
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="confirm-pass" className="text-[#6a4a4f]">
                 Confirm
               </Label>
-              <Input id="confirm-pass" type="password" className={inputClass} />
+              <Input
+                id="confirm-pass"
+                type="password"
+                value={confirmPassword}
+                onChange={(event) =>
+                  setConfirmPassword(event.currentTarget.value)
+                }
+                autoComplete="new-password"
+                className={inputClass}
+              />
             </div>
-          </div>
-          <Button className={saveBtnClass}>Update password</Button>
+            </div>
+            <Button
+              type="submit"
+              className={saveBtnClass}
+              disabled={isSavingPassword}
+            >
+              {isSavingPassword ? "Updating…" : "Update password"}
+            </Button>
+          </form>
+          {passwordStatus && <p className="text-sm text-green-700">{passwordStatus}</p>}
+          {passwordError && <p className="text-sm text-red-700" role="alert">{passwordError}</p>}
         </Card>
       </div>
     </Panel>

@@ -17,6 +17,7 @@ export type AuthUser = {
   email: string;
   displayName: string;
   role: string;
+  profileImageUrl: string | null;
   createdAt: string;
 };
 

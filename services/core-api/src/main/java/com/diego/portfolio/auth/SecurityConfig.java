@@ -71,6 +71,7 @@ public class SecurityConfig {
                 .requestMatchers(
                     HttpMethod.GET,
                     "/auth/verify",
+                    "/auth/confirm-email-change",
                     "/auth/csrf",
                     "/actuator/health"
                 ).permitAll()
@@ -83,6 +84,12 @@ public class SecurityConfig {
                     "/games/tictactoe/sessions/*/moves"
                 ).permitAll()
                 .requestMatchers(HttpMethod.GET, "/auth/me").authenticated()
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/auth/change-password",
+                    "/auth/change-email",
+                    "/auth/profile-image"
+                ).authenticated()
                 .requestMatchers(
                     HttpMethod.GET,
                     "/games/stats",
