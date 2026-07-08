@@ -56,7 +56,7 @@ const jobs: Job[] = [
 const skillGroups: { title: string; skills: string[] }[] = [
   {
     title: "Languages",
-    skills: ["Python", "Java", "C++", "JavaScript", "SQL", "C", "Kotlin", "SystemVerilog", "HTML/CSS"],
+    skills: ["Python", "Java", "C++", "JavaScript", "TypeScript", "SQL", "C", "Kotlin", "SystemVerilog", "HTML/CSS"],
   },
   {
     title: "Frameworks",
