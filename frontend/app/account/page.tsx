@@ -377,6 +377,12 @@ function AccountSection({
         body: formData,
       });
 
+      if (response.status === 401) {
+        await refreshAuth();
+        setImageError("Your login expired. Please log in again, then upload the image.");
+        return;
+      }
+
       if (!response.ok) {
         throw new Error(
           await readApiError(response, "Unable to update profile image."),
