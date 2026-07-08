@@ -35,6 +35,7 @@ async function requestCurrentUser(): Promise<AuthUser | null> {
   try {
     const response = await fetch("/api/auth/me", {
       credentials: "include",
+      cache: "no-store",
     });
 
     if (!response.ok) {

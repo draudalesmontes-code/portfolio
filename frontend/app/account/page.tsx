@@ -298,6 +298,9 @@ function AccountSection({
   const [profileImageUrl, setProfileImageUrl] = useState(
     user.profileImageUrl ?? "",
   );
+  const [savedProfileImageUrl, setSavedProfileImageUrl] = useState(
+    user.profileImageUrl ?? "",
+  );
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -376,9 +379,13 @@ function AccountSection({
         );
       }
 
+      const updatedUser = (await response.json()) as AuthUser;
+      const updatedProfileImageUrl = updatedUser.profileImageUrl ?? "";
+      setSavedProfileImageUrl(updatedProfileImageUrl);
+      setProfileImageUrl(updatedProfileImageUrl);
       await refreshAuth();
       setImageStatus(
-        nextProfileImageUrl
+        updatedProfileImageUrl
           ? "Profile picture updated."
           : "Profile picture cleared.",
       );
@@ -444,10 +451,10 @@ function AccountSection({
         {/* picture */}
         <Card className="p-5">
           <form onSubmit={handleImageSubmit} className="flex flex-col gap-5 sm:flex-row sm:items-center">
-            {user.profileImageUrl ? (
+            {savedProfileImageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={user.profileImageUrl}
+                src={savedProfileImageUrl}
                 alt={user.displayName}
                 className="size-20 rounded-full object-cover"
               />
